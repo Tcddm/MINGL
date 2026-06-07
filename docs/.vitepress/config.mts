@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   srcDir: "md",
-  
+  base: '/MINGL/',
   title: "MINGL",
   description: "声明即界面，编译即确定",
   themeConfig: {
