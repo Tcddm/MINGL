@@ -1,0 +1,9 @@
+/tools/
+/platform/
+/cmake-build-debug/
+
+/MiSans-Normal.ttf
+/docs/run.bat
+/docs/node_modules/
+/docs/.vitepress/cache/
+/.idea/

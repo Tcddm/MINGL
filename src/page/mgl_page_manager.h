@@ -1,0 +1,36 @@
+#ifndef MGL_PAGE_MANAGER_H
+#define MGL_PAGE_MANAGER_H
+
+#include "mgl_render.h"
+#include <string.h>
+
+#ifdef __cplusplus
+extern "C"{
+#endif
+
+extern const mgl_page_descriptor_t g_mgl_page_registry[];
+extern const uint8_t g_mgl_page_registry_count;
+
+#define MGL_PAGE_ENTRY(name,make_func) {(name),(make_func)}
+
+#define MGL_PAGE_WIDGETS_START(name) \
+    mgl_page_t *name(){              \
+    return
+
+#define MGL_PAGE_WIDGETS_END() ;}
+
+#define MGL_PAGE_REGISTRY_START() \
+    const mgl_page_descriptor_t g_mgl_page_registry[]={
+
+#define MGL_PAGE_REGISTRY_END() \
+    {NULL,NULL}}; \
+    const uint8_t g_mgl_page_registry_count= \
+        sizeof(g_mgl_page_registry)/sizeof(g_mgl_page_registry[0])-1;
+
+bool mgl_page_push(const char *name);
+mgl_page_t *mgl_get_current_page(void);
+
+#ifdef __cplusplus
+}
+#endif
+#endif //MGL_PAGE_MANAGER_H
