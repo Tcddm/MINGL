@@ -4,7 +4,7 @@ static void draw(mgl_draw_ctx_t *ctx) {
     mgl_widget_t *self=ctx->widget;
     mgl_label_t *label=container_of(self,mgl_label_t,base);
     const mgl_font_t *font=label->font;
-    mgl_ctx_draw_text(ctx,self->bounds.x,(mgl_coord_t)(self->bounds.y+font->font_size),0,label->text,font,&label->painter);
+    mgl_ctx_draw_text(ctx,self->bounds.x,(mgl_coord_t)(self->bounds.y+font->baseline),0,label->text,font,&label->painter);
 }
 
 static void measure(mgl_widget_t *self,

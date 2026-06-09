@@ -18,6 +18,7 @@ static void button_draw(mgl_draw_ctx_t *ctx){
 
     mgl_coord_t content_x=(mgl_coord_t)(self->bounds.x+button->padding);
     mgl_coord_t content_y=(mgl_coord_t)(self->bounds.y+button->padding);
+    mgl_coord_t content_w=(mgl_coord_t)(self->bounds.w-button->padding*2);
     mgl_coord_t content_h=(mgl_coord_t)(self->bounds.h-button->padding*2);
 
     mgl_layout_item_t items[2];
@@ -42,7 +43,8 @@ static void button_draw(mgl_draw_ctx_t *ctx){
 
     mgl_layout_linear_layout(items,count,MGL_LINEAR_HORIZONTAL,button->spacing,
                              MGL_ALIGN_CENTER,
-                             content_x,content_y,content_h);
+                             MGL_ALIGN_CENTER,
+                             content_x,content_y,content_h,content_w);
 
     uint8_t idx=0;
 
@@ -54,7 +56,7 @@ static void button_draw(mgl_draw_ctx_t *ctx){
     }
 
     if (button->text&&button->font) {
-        mgl_coord_t baseline_y=(mgl_coord_t)(items[idx].bounds.y+button->font->font_size);
+        mgl_coord_t baseline_y=(mgl_coord_t)(items[idx].bounds.y+button->font->baseline);
         mgl_ctx_draw_text(ctx,items[idx].bounds.x,baseline_y,0,
                           button->text,button->font,&button->foreground);
     }

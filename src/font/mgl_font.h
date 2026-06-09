@@ -21,6 +21,7 @@ typedef struct {
     uint8_t font_size;        //字号
     uint8_t bpp;              //位图像素位数
     uint16_t glyph_count;     //包含的字符总数
+    uint8_t baseline;
     const mgl_glyph_t *glyphs; //指向字符数组的指针（按码点排序）
     const uint8_t *bmp;       //位图数据
 } mgl_font_t;

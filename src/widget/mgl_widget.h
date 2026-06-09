@@ -24,7 +24,8 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_event_t *);
 #define MGL_WIDGET_BASE_ARGS_FIELD \
     mgl_margin_t margin; \
     mgl_coord_t pref_w; \
-    mgl_coord_t pref_h;
+    mgl_coord_t pref_h; \
+    uint16_t id;
 
 
 #define MGL_WIDGET_BASE_FIELD_HANDLE(custom_widget,custom_widget_args) \
@@ -39,6 +40,9 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_event_t *);
             custom_widget->base.pref_h=-1;                                                                       \
         }else{ \
             custom_widget->base.pref_h=custom_widget_args->pref_h;                                                                   \
+        } \
+        if(custom_widget_args->id!=0){ \
+            custom_widget->base.id=custom_widget_args->id; \
         } \
     }while(0)
 
@@ -56,7 +60,6 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_event_t *);
 
 #define MGL_WIDGET_ACTION_HANDLER_FIELD_HANDLE(custom_widget,custom_widget_args) \
     MGL_WIDGET_FIELD_HANDLE(custom_widget,custom_widget_args,action_handler)
-
 
 #define MGL_MEASURE_RESOLVE(pref_size, natural_size, constraint, out_size) \
     do { \
@@ -104,6 +107,7 @@ typedef struct {
 
 struct mgl_widget_t{
     const mgl_widget_vtable_t *vtable;
+    uint16_t id;
     uint16_t type;
 
     mgl_rect_t bounds;

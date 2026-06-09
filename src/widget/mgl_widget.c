@@ -2,6 +2,7 @@
 void mgl_widget_init(mgl_widget_t *widget,const mgl_widget_vtable_t *vtable,const char *name,void *user_data,uint16_t type){
     widget->vtable=vtable;
     widget->type=type;
+    widget->id=0;
     
     widget->bounds=(mgl_rect_t){0, 0, 0, 0};
     widget->margin=(mgl_margin_t){0,0,0,0};

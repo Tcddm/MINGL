@@ -28,7 +28,10 @@ extern const uint8_t g_mgl_page_registry_count;
         sizeof(g_mgl_page_registry)/sizeof(g_mgl_page_registry[0])-1;
 
 bool mgl_page_push(const char *name);
+void mgl_page_back(void);
 mgl_page_t *mgl_get_current_page(void);
+mgl_widget_t *mgl_page_find_widget_by_id(mgl_page_t *page,uint16_t id);
+mgl_widget_t *mgl_current_page_find_widget_by_id(uint16_t id);
 
 #ifdef __cplusplus
 }

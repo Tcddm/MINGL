@@ -130,11 +130,40 @@ static void linear_layout_layout(mgl_widget_t *self, const mgl_rect_t *area) {
     mgl_coord_t content_w=(mgl_coord_t)(area->w-layout->padding_margin.left-layout->padding_margin.right);
     mgl_coord_t content_h=(mgl_coord_t)(area->h-layout->padding_margin.top-layout->padding_margin.bottom);
 
-    MGL_LOG_DBG(LOG_TAG,"layout start (%p): area=(%d,%d,%d,%d) content=(%d,%d,%d,%d)",
-                layout,area->x,area->y,area->w,area->h,content_x,content_y,content_w,content_h);
+    mgl_coord_t total_main=0;
+    mgl_widget_t *tmp=self->first_child;
+    while(tmp){
+        if(tmp->vtable->measure){
+            mgl_coord_t cw,ch;
+            tmp->vtable->measure(tmp,
+                                 (mgl_measure_constraint_t){32767, MGL_MEASURE_NONE},
+                                 (mgl_measure_constraint_t){32767, MGL_MEASURE_NONE},
+                                 &cw,&ch);
+            mgl_margin_t *m=&tmp->margin;
+            if(layout->direction==MGL_LINEAR_HORIZONTAL) {
+                total_main=(mgl_coord_t)(total_main+m->left+cw+m->right);
+            } else {
+                total_main=(mgl_coord_t)(total_main+m->top+ch+m->bottom);
+            }
+        }
+        tmp=tmp->next_sibling;
+    }
+
+    mgl_coord_t main_size;
+    if(layout->direction==MGL_LINEAR_HORIZONTAL){
+        main_size=content_w;
+    }else{
+        main_size=content_h;
+    }
+    mgl_coord_t start_offset=mgl_layout_align_offset(layout->main_align,
+                                                     main_size,
+                                                     total_main);
+
+    MGL_LOG_DBG(LOG_TAG,"layout start (%p): area=(%d,%d,%d,%d) content=(%d,%d,%d,%d) start_offset=%d",
+                layout,area->x,area->y,area->w,area->h,content_x,content_y,content_w,content_h,start_offset);
 
     mgl_widget_t *child=self->first_child;
-    mgl_coord_t cursor=0;
+    mgl_coord_t cursor=start_offset;
 
     while(child){
 
@@ -222,6 +251,7 @@ void *mgl_linear_layout_init(void *memory,const void *args){
 
 
     layout->cross_align=layout_args->cross_align;
+    layout->main_align=layout_args->main_align;
     MGL_WIDGET_BASE_FIELD_HANDLE(layout,layout_args);
     MGL_WIDGET_PAINTER_FIELD_HANDLE(layout,layout_args);
     MGL_WIDGET_ROUND_RADIUS_FIELD_HANDLE(layout,layout_args);

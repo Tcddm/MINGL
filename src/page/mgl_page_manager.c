@@ -79,8 +79,56 @@ bool mgl_page_push(const char *name){
     return true;
 }
 
+void mgl_page_back(void){
+    if(page_stack_top<=1){
+        return;
+    }
+    mgl_page_t *old_page=mgl_get_current_page();
+    page_stack_top--;
+    mgl_page_pool_free(old_page->pool_start);
+    mgl_page_t *new_page=mgl_get_current_page();
+    mgl_page_mark_all_widget_dirty(new_page->root);
+    MGL_LOG_INFO(MGL_LOG_TAG_PAGE,"back to %s page (destroyed %s page)",
+                 new_page->desc->name,
+                 old_page->desc->name
+                 );
+}
+
 mgl_page_t *mgl_get_current_page(void){
     if(page_stack_top==0){return NULL;}
     return page_stack[page_stack_top-1];
 }
 
+static mgl_widget_t *mgl_widget_find_by_id(mgl_widget_t *root,uint16_t id){
+    if(!root||id==0){return NULL;}
+
+    mgl_widget_t *stack[MGL_MAX_WIDGET_DEPTH];
+    int stack_top=0;
+    stack[stack_top++]=root;
+
+    while(stack_top>0){
+        mgl_widget_t *w=stack[--stack_top];
+
+        if (w->id==id) {
+            return w;
+        }
+
+        mgl_widget_t *child=w->first_child;
+        while(child){
+            if(stack_top<MGL_MAX_WIDGET_DEPTH){
+                stack[stack_top++]=child;
+            }
+            child=child->next_sibling;
+        }
+    }
+    return NULL;
+}
+
+mgl_widget_t *mgl_page_find_widget_by_id(mgl_page_t *page,uint16_t id){
+    if(!page){return NULL;}
+    return mgl_widget_find_by_id(page->root,id);
+}
+
+mgl_widget_t *mgl_current_page_find_widget_by_id(uint16_t id){
+    return mgl_widget_find_by_id(mgl_get_current_page()->root,id);
+}

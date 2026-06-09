@@ -1,19 +1,4 @@
 #include "mgl_render.h"
-void mgl_widget_mark_dirty(mgl_widget_t *root) {
-    if (!root) return;
-    mgl_widget_t *w = root;
-    while (w) {
-        w->dirty = true;
-        if (w->first_child) {
-            w = w->first_child;
-        } else {
-            while (w && !w->next_sibling) {
-                w = w->parent;
-            }
-            if (w) w = w->next_sibling;
-        }
-    }
-}
 void mgl_render_widget(mgl_widget_t *root, const mgl_rect_t *screen_clip) {
     if (!root || !screen_clip) return;
 
@@ -68,6 +53,7 @@ void mgl_render_widget(mgl_widget_t *root, const mgl_rect_t *screen_clip) {
 
 void mgl_render_page(mgl_page_t *page,mgl_rect_t screen){
     if (!page || !page->root) return;
-    mgl_widget_mark_dirty(page->root);
+    mgl_hal_clear_screen();
+    mgl_page_mark_all_widget_dirty(page->root);
     mgl_render_widget(page->root, &screen);
 }

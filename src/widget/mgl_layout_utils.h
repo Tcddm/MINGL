@@ -32,9 +32,11 @@ void mgl_layout_linear_measure(const mgl_layout_item_t *items,uint8_t count,
 
 void mgl_layout_linear_layout(mgl_layout_item_t *items,uint8_t count,
                               mgl_linear_direction_t direction,uint8_t spacing,
-                              mgl_linear_align_t align,
+                              mgl_linear_align_t cross_align,
+                              mgl_linear_align_t main_align,
                               mgl_coord_t start_x,mgl_coord_t start_y,
-                              mgl_coord_t cross_size);
+                              mgl_coord_t cross_size,
+                              mgl_coord_t main_size);
 
 
 static inline mgl_coord_t mgl_layout_align_offset(mgl_linear_align_t align,

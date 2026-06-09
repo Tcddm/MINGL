@@ -11,7 +11,7 @@ extern "C"{
 void *mgl_label_init(void *memory,const void *args);
 
 typedef struct {
-    const char *text;
+    char *text;
     const mgl_font_t *font;
     MGL_WIDGET_BASE_ARGS_FIELD
     MGL_WIDGET_PAINTER_ARGS_FIELD
