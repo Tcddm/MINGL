@@ -14,8 +14,7 @@ extern const uint8_t g_mgl_page_registry_count;
 #define MGL_PAGE_ENTRY(name,make_func) {(name),(make_func)}
 
 #define MGL_PAGE_WIDGETS_START(name) \
-    mgl_page_t *name(){              \
-    return
+    mgl_page_t *name(){
 
 #define MGL_PAGE_WIDGETS_END() ;}
 

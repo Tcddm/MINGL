@@ -104,17 +104,17 @@ static bool button_on_event(mgl_widget_t *self,const mgl_event_t *event){
 
     if(event->type==MGL_EVENT_TOUCH_DOWN){
         button->state=MGL_BUTTON_STATE_PRESSED;
-        self->dirty=true;
+        mgl_widget_set_dirty(self);
         return true;
     }
 
     if(event->type==MGL_EVENT_TOUCH_UP){
         button->state=MGL_BUTTON_STATE_NORMAL;
-        self->dirty=true;
+        mgl_widget_set_dirty(self);
     }
 
-    bool user_handled = false;
-    MGL_WIDGET_ACTION_HANDLE_ACTION(button, self, event, user_handled);
+    bool user_handled=false;
+    MGL_WIDGET_ACTION_HANDLE_ACTION(button,self,event,user_handled);
 
     return user_handled;
 }

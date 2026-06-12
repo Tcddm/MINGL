@@ -46,3 +46,8 @@ void *mgl_label_init(void *memory,const void *args){
 
     return &label->base;
 }
+
+void mgl_label_set_text(mgl_label_t *label,const char *text){
+    label->text=text;
+    mgl_widget_set_dirty_content(&label->base);
+}

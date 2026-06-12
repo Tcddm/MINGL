@@ -7,7 +7,6 @@ static void draw(mgl_draw_ctx_t *ctx){
     mgl_linear_layout_t *layout=container_of(ctx->widget,mgl_linear_layout_t,base);
     mgl_painter_t painter=layout->painter;
     mgl_rect_t rect=layout->base.bounds;
-    if(painter.type!=MGL_PAINTER_TYPE_EMPTY){
         mgl_ctx_fill_round_rect(ctx,
                           rect.x,
                           rect.y,
@@ -16,7 +15,7 @@ static void draw(mgl_draw_ctx_t *ctx){
                           layout->round_radius,
                           &painter
         );
-    }
+
 }
 
 static void linear_layout_measure(mgl_widget_t *self,
@@ -210,10 +209,25 @@ static void linear_layout_layout(mgl_widget_t *self, const mgl_rect_t *area) {
             cursor=(mgl_coord_t)(cursor+m->top+child_h+m->bottom);
         }
 
-        if(child->vtable&&child->vtable->layout) {
-            child->vtable->layout(child, &child_area);
+        mgl_rect_t old_bounds=child->bounds;
+
+        if(child->vtable&&child->vtable->layout){
+            child->prev_bounds=child->bounds;
+            child->vtable->layout(child,&child_area);
         }else{
+            child->prev_bounds=child->bounds;
             child->bounds=child_area;
+        }
+
+        bool child_moved=(child->bounds.x!=old_bounds.x||
+                            child->bounds.y!=old_bounds.y||
+                            child->bounds.w!= old_bounds.w||
+                            child->bounds.h!=old_bounds.h);
+        if(child_moved){
+            child->dirty=1;
+            if(child->vtable->layout){
+                child->layout_dirty=1;
+            }
         }
 
         MGL_LOG_DBG(LOG_TAG,"child (%p) placed at (%d,%d,%d,%d)",

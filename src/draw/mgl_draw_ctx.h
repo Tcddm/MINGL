@@ -6,6 +6,7 @@
 #include "painter/mgl_painter.h"
 #include "core/mgl_static_assert.h"
 #include "core/mgl_math.h"
+#include "core/mgl_rect.h"
 
 #ifdef __cplusplus
 extern "C"{
@@ -45,7 +46,7 @@ static inline void mgl_ctx_draw_pixel(mgl_draw_ctx_t *ctx,mgl_coord_t x,mgl_coor
         y>=r->y&&y<r->y+r->h){
         if(painter->type==MGL_PAINTER_TYPE_SOLID){
             mgl_hal_set_pixel(x,y,painter->solid_color);
-        }else{
+        }else if(painter->type==MGL_PAINTER_TYPE_CUSTOM){
             painter->vtable->set_pixel(painter,x,y);
         }
     }
@@ -98,17 +99,6 @@ void mgl_ctx_fill_rect(mgl_draw_ctx_t *ctx,mgl_coord_t x,mgl_coord_t y,mgl_coord
 void mgl_ctx_draw_line(mgl_draw_ctx_t *ctx,mgl_coord_t x0,mgl_coord_t y0,mgl_coord_t x1,mgl_coord_t y1,mgl_coord_t w,const mgl_painter_t *painter);
 // #endregion
 
-// #region mgl_rect_intersect
-/**
- * @brief 计算两个矩形的相交区域
- *
- * @param a 矩形A
- * @param b 矩形B
- * @param[out] out 相交结果矩形
- * @return  是否有交集
- */
-bool mgl_rect_intersect(const mgl_rect_t *a,const mgl_rect_t *b,mgl_rect_t *out);
-// #endregion
 
 #ifdef __cplusplus
 }

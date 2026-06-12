@@ -111,6 +111,8 @@ struct mgl_widget_t{
     uint16_t type;
 
     mgl_rect_t bounds;
+    mgl_rect_t prev_bounds;
+
     mgl_margin_t margin;
     mgl_coord_t pref_w;
     mgl_coord_t pref_h;
@@ -120,10 +122,11 @@ struct mgl_widget_t{
     mgl_widget_t *next_sibling;          //后一个兄弟
 
     uint8_t dirty:1;
+    uint8_t layout_dirty:1;
     uint8_t visible:1;
     uint8_t enabled:1;
     uint8_t focused:1;
-    uint8_t reserved:4;
+    uint8_t reserved:3;
 
     int8_t  anim_slot;
 
@@ -142,6 +145,26 @@ void mgl_widget_init(mgl_widget_t *widget,const mgl_widget_vtable_t *vtable,cons
 void mgl_widget_add_child(mgl_widget_t *parent,mgl_widget_t *child);
 mgl_action_type_t mgl_widget_get_action(mgl_widget_t *self,const mgl_event_t *event);
 
+static inline void mgl_widget_set_dirty(mgl_widget_t *w) {
+    while(w){
+        w->dirty=1;
+        w=w->parent;
+    }
+}
+
+static inline void mgl_widget_set_dirty_content(mgl_widget_t *w){
+    if(w->vtable->measure&&w->parent&&w->parent->vtable->layout){
+        mgl_coord_t nw,nh;
+        w->vtable->measure(w,
+                           (mgl_measure_constraint_t){32767,MGL_MEASURE_NONE},
+                           (mgl_measure_constraint_t){32767,MGL_MEASURE_NONE},
+                           &nw,&nh);
+        if(nw!=w->bounds.w||nh!=w->bounds.h){
+            w->parent->layout_dirty=1;
+        }
+    }
+    mgl_widget_set_dirty(w);
+}
 
 #ifdef __cplusplus
 }

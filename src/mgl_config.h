@@ -17,6 +17,10 @@ extern "C" {
 #define MGL_MAX_WIDGET_DEPTH 16
 #endif
 
+#ifndef MGL_DIRTY_RECT_MAX_COUNT
+#define MGL_DIRTY_RECT_MAX_COUNT 8
+#endif
+
 #ifndef MGL_PAGE_POOL_SIZE
 #define MGL_PAGE_POOL_SIZE 2048
 #endif

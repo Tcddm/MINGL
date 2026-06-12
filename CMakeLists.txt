@@ -27,6 +27,8 @@ set(MGL_CORE_SOURCES
         src/event/mgl_event.c
         src/hal/mgl_hal_sw.c
         tools/mgl_font.c
+        src/core/mgl_rect.c
+        src/painter/mgl_empty_painter.c
 )
 
 add_library(mgl_core STATIC ${MGL_CORE_SOURCES})

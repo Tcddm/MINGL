@@ -5,6 +5,7 @@ void mgl_widget_init(mgl_widget_t *widget,const mgl_widget_vtable_t *vtable,cons
     widget->id=0;
     
     widget->bounds=(mgl_rect_t){0, 0, 0, 0};
+    widget->prev_bounds=(mgl_rect_t){0, 0, 0, 0};
     widget->margin=(mgl_margin_t){0,0,0,0};
     
     widget->parent=NULL;

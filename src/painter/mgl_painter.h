@@ -2,6 +2,7 @@
 #define MGL_PAINTER_H
 
 #include "mgl_color.h"
+#include "core/mgl_types.h"
 
 #ifdef __cplusplus
 extern "C"{
@@ -10,8 +11,8 @@ extern "C"{
 typedef struct mgl_painter_t mgl_painter_t;
 
 typedef struct {
-    void (*fill_rect)(const mgl_painter_t *self,int16_t x,int16_t y,uint16_t w,uint16_t h);
-    void (*set_pixel)(const mgl_painter_t *self,int16_t x,int16_t y);
+    void (*fill_rect)(const mgl_painter_t *self,mgl_coord_t x,mgl_coord_t y,mgl_coord_t w,mgl_coord_t h);
+    void (*set_pixel)(const mgl_painter_t *self,mgl_coord_t x,mgl_coord_t y);
 } mgl_painter_vtable_t;
 
 typedef enum{
@@ -28,6 +29,8 @@ struct mgl_painter_t {
     };
 };
 
+extern const mgl_painter_vtable_t g_mgl_empty_painter_vtable;
+
 #define MGL_WIDGET_PAINTER_FIELD_NAME(name) \
     mgl_painter_t name;
 
@@ -40,6 +43,7 @@ struct mgl_painter_t {
             custom_widget->name=*(custom_widget_args->name); \
         }else{ \
             custom_widget->name.type=MGL_PAINTER_TYPE_EMPTY; \
+            custom_widget->name.vtable=&g_mgl_empty_painter_vtable; \
         } \
     }while(0)
 

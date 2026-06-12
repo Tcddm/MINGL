@@ -1,7 +1,7 @@
 #ifndef MGL_RENDER_H
 #define MGL_RENDER_H
 
-#include "draw/mgl_draw_ctx.h"
+#include "core/mgl_rect.h"
 #include "mgl_page.h"
 
 #ifdef __cplusplus

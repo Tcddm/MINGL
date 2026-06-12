@@ -31,6 +31,8 @@ typedef struct {
         .args=&(mgl_label_args_t){ __VA_ARGS__ } \
     })
 
+void mgl_label_set_text(mgl_label_t *label,const char *text);
+
 #ifdef __cplusplus
 }
 #endif

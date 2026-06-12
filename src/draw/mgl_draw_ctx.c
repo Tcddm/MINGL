@@ -2,22 +2,6 @@
 
 mgl_draw_ctx_t g_mgl_full_screen_ctx;
 
-//矩形交集计算
-bool mgl_rect_intersect(const mgl_rect_t *a,const mgl_rect_t *b,mgl_rect_t *out){
-    int32_t x1 = (a->x > b->x) ? a->x : b->x;
-    int32_t y1 = (a->y > b->y) ? a->y : b->y;
-    int32_t x2 = ((int32_t)a->x + a->w) < ((int32_t)b->x + b->w) ? ((int32_t)a->x + a->w) : ((int32_t)b->x + b->w);
-    int32_t y2 = ((int32_t)a->y + a->h) < ((int32_t)b->y + b->h) ? ((int32_t)a->y + a->h) : ((int32_t)b->y + b->h);
-    if (x1<x2&&y1<y2){
-        out->x=(mgl_coord_t)x1;
-        out->y=(mgl_coord_t)y1;
-        out->w=(mgl_coord_t)(x2 - x1);
-        out->h=(mgl_coord_t)(y2 - y1);
-        return true;
-    }
-    return false;
-}
-
 void mgl_ctx_init(mgl_draw_ctx_t *ctx,mgl_widget_t *widget,const mgl_rect_t *clip){
     ctx->clip=*clip;
     ctx->widget=widget;
@@ -44,7 +28,7 @@ void mgl_ctx_fill_rect(mgl_draw_ctx_t *ctx,mgl_coord_t x,mgl_coord_t y,mgl_coord
     if (mgl_rect_intersect(&rect,&ctx->clip,&draw_area)){
         if(painter->type==MGL_PAINTER_TYPE_SOLID){
             mgl_hal_fill_rect(draw_area.x,draw_area.y,draw_area.w,draw_area.h,painter->solid_color);
-        }else{
+        }else if(painter->type==MGL_PAINTER_TYPE_CUSTOM){
             painter->vtable->fill_rect(painter,draw_area.x,draw_area.y,draw_area.w,draw_area.h);
         }
     }
