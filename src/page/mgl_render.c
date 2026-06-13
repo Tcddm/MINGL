@@ -1,26 +1,104 @@
 #include "mgl_render.h"
 #include "logger/mgl_log.h"
 
+/**
+ * @brief 迭代遍历脏但未移动的容器子树，收集所有真正产生像素变化的叶子控件或移动容器的 prev∪bounds 区域
+ *
+ * @param container 脏但未移动的容器
+ * @param rects 脏矩形结果数组
+ * @param start_idx rects中已有条目数（非零表示前方已有脏矩形）
+ * @return rects中的总条目数
+ * @note 栈满时退化为收集当前子控件的全prev∪bounds
+ */
+static uint8_t render_collect_sub_dirty(mgl_widget_t *container,
+                                        mgl_rect_t rects[],
+                                        uint8_t start_idx){
+    mgl_widget_t *stack[MGL_MAX_WIDGET_DEPTH];
+    int sp=0;
+    uint8_t count=start_idx;
+
+    stack[sp++]=container;
+    while(sp>0&&count<MGL_DIRTY_RECT_MAX_COUNT){
+        mgl_widget_t *node=stack[--sp];
+
+        for(mgl_widget_t *c=node->first_child;c;c=c->next_sibling){
+            if(!c->dirty){continue;}
+
+            bool changed=(c->prev_bounds.x!=c->bounds.x||
+                            c->prev_bounds.y!=c->bounds.y||
+                            c->prev_bounds.w!=c->bounds.w||
+                            c->prev_bounds.h!=c->bounds.h);
+            bool is_container=(c->vtable->layout!=NULL);
+
+            if(!is_container||changed){
+                //叶子控件或自身移动过的容器直接收集
+                if(count<MGL_DIRTY_RECT_MAX_COUNT){
+                    mgl_rect_union(&c->prev_bounds,&c->bounds,&rects[count]);
+                    count++;
+                }else{
+                    mgl_rect_union(&rects[MGL_DIRTY_RECT_MAX_COUNT-1],
+                                   &c->prev_bounds,
+                                   &rects[MGL_DIRTY_RECT_MAX_COUNT-1]);
+                }
+            }else{
+                //脏但未移动的容器入栈，继续向下展开
+                if(sp<MGL_MAX_WIDGET_DEPTH){
+                    stack[sp++]=c;
+                }else{
+                    //栈深度耗尽退化为收集该容器的全区域
+                    if(count<MGL_DIRTY_RECT_MAX_COUNT){
+                        mgl_rect_union(&c->prev_bounds,&c->bounds,&rects[count]);
+                        count++;
+                    }else{
+                        mgl_rect_union(&rects[MGL_DIRTY_RECT_MAX_COUNT-1],
+                                       &c->prev_bounds,
+                                       &rects[MGL_DIRTY_RECT_MAX_COUNT-1]);
+                    }
+                }
+            }
+        }
+    }
+    return count;
+}
+
+/**
+ * 收集指定控件的局部脏矩形数组
+ * @param w 控件
+ * @param rects 脏矩形结果数组
+ * @return rects中的脏矩形条目数
+ */
 static uint8_t render_gather_dirty_rects(mgl_widget_t *w,mgl_rect_t rects[]){
     uint8_t count=0;
     bool has_layout=(w->vtable->layout!=NULL);
 
-    //每个脏子控件独立一条脏矩形
+    //遍历脏子控件，收集脏矩形
     for(mgl_widget_t *c=w->first_child;c;c=c->next_sibling){
         if(!c->dirty){
-            continue;}
-        if(count<MGL_DIRTY_RECT_MAX_COUNT){
-            mgl_rect_union(&c->prev_bounds,&c->bounds,&rects[count]);
-            count++;
+            continue;
+        }
+        bool child_self_changed=(c->prev_bounds.x!=c->bounds.x||
+                                   c->prev_bounds.y!=c->bounds.y||
+                                   c->prev_bounds.w!=c->bounds.w||
+                                   c->prev_bounds.h!=c->bounds.h);
+        bool child_is_container=(c->vtable->layout!=NULL);
+        if(child_is_container&&!child_self_changed){
+            //容器仅因子控件冒泡变脏，展开子树取真实脏矩形
+            count=render_collect_sub_dirty(c,rects,count);
         }else{
-            //溢出合并到最后一条
-            mgl_rect_t rect;
-            mgl_rect_union(&c->prev_bounds,&c->bounds,&rect);
-            mgl_rect_union(&rects[MGL_DIRTY_RECT_MAX_COUNT-1],&rect,
-                           &rects[MGL_DIRTY_RECT_MAX_COUNT-1]);
+            //叶子控件或自身移动过的容器取其prev∪bounds
+            if(count<MGL_DIRTY_RECT_MAX_COUNT){
+                mgl_rect_union(&c->prev_bounds,&c->bounds,&rects[count]);
+                count++;
+            }else{
+                mgl_rect_t rect;
+                mgl_rect_union(&c->prev_bounds,&c->bounds,&rect);
+                mgl_rect_union(&rects[MGL_DIRTY_RECT_MAX_COUNT-1],&rect,
+                               &rects[MGL_DIRTY_RECT_MAX_COUNT-1]);
+            }
         }
     }
 
+    //判断是否需要合并自身区域
     bool had_dirty_child=(count>0);
     bool self_changed=(w->prev_bounds.x!=w->bounds.x||
                          w->prev_bounds.y!=w->bounds.y||
@@ -183,7 +261,8 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
 
 void mgl_render_page(mgl_page_t *page,mgl_rect_t screen){
     if (!page||!page->root||!page->root->dirty){return;}
+    uint32_t start=mgl_hal_get_tick_ms();
     MGL_LOG_DBG(MGL_LOG_TAG_RENDER,"render start");
     mgl_render_widget(page->root,&screen);
-    MGL_LOG_DBG(MGL_LOG_TAG_RENDER,"render done");
+    MGL_LOG_DBG(MGL_LOG_TAG_RENDER,"render done (%ums)",mgl_hal_get_tick_ms()-start);
 }
