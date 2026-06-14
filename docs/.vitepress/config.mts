@@ -30,7 +30,8 @@ export default defineConfig({
               { text: '裁剪系统概述', link: '/ctx' },
               { text: '基础绘制', link: '/ctx/base' },
 			  { text: '填充多边形', link: '/ctx/fill_polygon' },
-			  { text: '绘制圆弧', link: '/ctx/arc' }
+			  { text: '绘制圆弧', link: '/ctx/arc' },
+			  { text: '绘制圆', link: '/ctx/circle' }
             ]
           }
 		]

@@ -43,6 +43,12 @@ extern "C" {
 #ifndef MGL_FILL_POLYGON_MAX_INTERSECTS //最大交点数
 #define MGL_FILL_POLYGON_MAX_INTERSECTS 128
 #endif
+#ifndef MGL_FPS_LOG
+#define MGL_FPS_LOG 1
+#endif
+#if MGL_FPS_LOG
+#define MGL_FPS_REPORT_INTERVAL_MS 2000
+#endif
 #ifdef __cplusplus
 }
 #endif

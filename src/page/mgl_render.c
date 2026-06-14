@@ -1,6 +1,10 @@
 #include "mgl_render.h"
 #include "logger/mgl_log.h"
-
+#if MGL_FPS_LOG
+static uint32_t render_frames=0;
+static uint32_t skip_frames=0;
+static uint32_t last_report=0;
+#endif
 /**
  * @brief 迭代遍历脏但未移动的容器子树，收集所有真正产生像素变化的叶子控件或移动容器的 prev∪bounds 区域
  *
@@ -260,7 +264,28 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
 }
 
 void mgl_render_page(mgl_page_t *page,mgl_rect_t screen){
-    if (!page||!page->root||!page->root->dirty){return;}
+#if MGL_FPS_LOG
+    uint32_t now=mgl_hal_get_tick_ms();
+    if(now-last_report>=MGL_FPS_REPORT_INTERVAL_MS){
+        uint32_t total=render_frames+skip_frames;
+        uint32_t idle=total ? (skip_frames*100/total) : 0;
+        MGL_LOG_DBG(MGL_LOG_TAG_RENDER,
+                     "FPS render=%u skip=%u total=%u idle=%u%%",
+                     render_frames,skip_frames,total,idle);
+        render_frames=0;
+        skip_frames=0;
+        last_report=now;
+    }
+#endif
+    if (!page||!page->root||!page->root->dirty){
+#if MGL_FPS_LOG
+    skip_frames++;
+#endif
+        return;
+    }
+#if MGL_FPS_LOG
+    render_frames++;
+#endif
     uint32_t start=mgl_hal_get_tick_ms();
     MGL_LOG_DBG(MGL_LOG_TAG_RENDER,"render start");
     mgl_render_widget(page->root,&screen);
