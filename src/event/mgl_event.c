@@ -1,4 +1,36 @@
 #include "mgl_event.h"
+
+static struct {
+    uint8_t finger_id;
+    mgl_coord_t down_x,down_y;
+    mgl_coord_t x,y;
+} fingers[MGL_TOUCH_MAX_FINGERS];
+static uint8_t finger_count=0;
+
+static int find_finger_idx(uint8_t id){
+    for (int i=0;i<finger_count;i++){
+        if(fingers[i].finger_id==id){
+            return i;
+        }
+    }
+    return -1;
+}
+
+static void add_finger(uint8_t id,mgl_coord_t x,mgl_coord_t y){
+    if(finger_count<MGL_TOUCH_MAX_FINGERS){
+        fingers[finger_count].finger_id=id;
+        fingers[finger_count].x=x;
+        fingers[finger_count].y=y;
+        fingers[finger_count].down_x=x;
+        fingers[finger_count].down_y=y;
+        finger_count++;
+    }
+}
+
+static void remove_finger(int idx){
+    fingers[idx]=fingers[--finger_count];
+}
+
 static mgl_widget_t *get_deepest_hit_widget(mgl_widget_t *root,mgl_coord_t x,mgl_coord_t y){
     if(!root||!root->visible){return NULL;}
 
@@ -46,32 +78,66 @@ bool mgl_dispatch_touch_event(mgl_widget_t *root,mgl_event_t *event){
     return event_bubble(target, event);
 }
 
-static bool g_touch_pressed=false;
-static mgl_coord_t g_last_x,g_last_y;
-
 void mgl_process_touch_data(const mgl_touch_data_t *data,mgl_widget_t *root){
-    if(data&&data->count>0){
-        if(!g_touch_pressed){
-            g_last_x=data->points[0].x;
-            g_last_y=data->points[0].y;
+    //抬起的手指，如果当前data中不存在则UP
+    for(int i =0; i < finger_count;){
+        bool alive=false;
+        if(data){
+            for(uint8_t n=0;n<data->count;n++){
+                if(data->points[n].finger_id == fingers[i].finger_id){
+                    alive=true;
+                    break;
+                }
+            }
+        }
+        if(!alive){
+            mgl_widget_t *target=get_deepest_hit_widget(root,
+                                                        fingers[i].down_x,
+                                                        fingers[i].down_y);
+            if(target){
+                mgl_event_t event={
+                        .type=MGL_EVENT_TOUCH_UP,
+                        .touch.x=fingers[i].x,
+                        .touch.y=fingers[i].y
+                };
+                event_bubble(target,&event);
+            }
+            remove_finger(i);
+        }else{
+            i++;
+        }
+    }
+
+    //当前手指，如果新增则DOWN，如果已存在且移动则为MOVE
+    if(!data){return;}
+    for(uint8_t i=0;i<data->count;i++){
+        uint8_t id=data->points[i].finger_id;
+        int idx=find_finger_idx(id);
+        if(idx<0){
+            //新增
+            add_finger(id,data->points[i].x,data->points[i].y);
             mgl_event_t event={
                     .type=MGL_EVENT_TOUCH_DOWN,
-                    .touch.x=g_last_x,
-                    .touch.y=g_last_y
+                    .touch.x=data->points[i].x,
+                    .touch.y=data->points[i].y
             };
             mgl_dispatch_touch_event(root,&event);
-            g_touch_pressed=true;
-        }
-
-    }else{
-        if(g_touch_pressed){
-            mgl_event_t event={
-                    .type=MGL_EVENT_TOUCH_UP,
-                    .touch.x=g_last_x,
-                    .touch.y=g_last_y
-            };
-            mgl_dispatch_touch_event(root,&event);
-            g_touch_pressed=false;
+        }else if(data->points[i].x != fingers[idx].x ||
+                 data->points[i].y != fingers[idx].y){
+            //移动
+            mgl_widget_t *target = get_deepest_hit_widget(root,
+                                                          fingers[idx].down_x,
+                                                          fingers[idx].down_y);
+            if(target){
+                mgl_event_t event={
+                        .type=MGL_EVENT_TOUCH_MOVE,
+                        .touch.x=data->points[i].x,
+                        .touch.y=data->points[i].y
+                };
+                event_bubble(target,&event);
+            }
+            fingers[idx].x=data->points[i].x;
+            fingers[idx].y=data->points[i].y;
         }
     }
 }

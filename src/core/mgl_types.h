@@ -74,6 +74,7 @@ typedef struct {
 
 typedef enum{
     MGL_EVENT_TOUCH_DOWN,
+    MGL_EVENT_TOUCH_MOVE,
     MGL_EVENT_TOUCH_UP
 } mgl_event_type_t;
 
