@@ -1,7 +1,8 @@
 #ifndef MGL_MATH_H
 #define MGL_MATH_H
 
-#include "stdint.h"
+#include <stdint.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C"{

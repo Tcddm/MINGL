@@ -1,7 +1,8 @@
 #ifndef MGL_TYPES_H
 #define MGL_TYPES_H
-#include "stdint.h"
-#include "stdbool.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
 #include "mgl_config.h"
 
 #ifdef __cplusplus

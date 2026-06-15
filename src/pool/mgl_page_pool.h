@@ -2,7 +2,8 @@
 #define MGL_PAGE_POOL_H
 
 #include "mgl_config.h"
-#include "stdint.h"
+#include <stdint.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C"{
