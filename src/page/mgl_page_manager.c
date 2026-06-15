@@ -75,7 +75,6 @@ bool mgl_page_push(const char *name){
     MGL_LOG_INFO(MGL_LOG_TAG_PAGE,"loading %s page done",name);
 
     mgl_page_layout(page);
-    page->root->layout_dirty=1;
 
     mgl_hal_clear_screen();
 
@@ -92,7 +91,6 @@ void mgl_page_back(void){
     mgl_page_t *new_page=mgl_get_current_page();
     mgl_page_mark_all_widget_dirty(new_page->root);
     new_page->root->prev_bounds=(mgl_rect_t){0,0,0,0};
-    new_page->root->layout_dirty=1;
     mgl_hal_clear_screen();
     MGL_LOG_INFO(MGL_LOG_TAG_PAGE,"back to %s page (destroyed %s page)",
                  new_page->desc->name,

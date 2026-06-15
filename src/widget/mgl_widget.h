@@ -82,6 +82,16 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_event_t *);
         } \
     }while(0)
 
+#define MGL_WIDGET_FIELD_DEFAULT_VALUE(custom_widget,custom_widget_args, \
+                                        field_name,default_value)        \
+    do{ \
+        if(!custom_widget_args->field_name){ \
+              custom_widget->field_name=default_value; \
+        }else{ \
+              custom_widget->field_name=custom_widget_args->field_name; \
+        } \
+    }while(0)
+
 typedef enum{
     MGL_MEASURE_EXACT,
     MGL_MEASURE_AT_MOST,
@@ -138,7 +148,8 @@ struct mgl_widget_t{
 typedef enum{
     MGL_WIDGET_TYPE_LINEAR_LAYOUT=0,
     MGL_WIDGET_TYPE_LABEL,
-    MGL_WIDGET_TYPE_BUTTON
+    MGL_WIDGET_TYPE_BUTTON,
+    MGL_WIDGET_TYPE_SLIDER
 } mgl_widget_type;
 
 void mgl_widget_init(mgl_widget_t *widget,const mgl_widget_vtable_t *vtable,const char *name,void *user_data,uint16_t type);
@@ -160,7 +171,11 @@ static inline void mgl_widget_set_dirty_content(mgl_widget_t *w){
                            (mgl_measure_constraint_t){32767,MGL_MEASURE_NONE},
                            &nw,&nh);
         if(nw!=w->bounds.w||nh!=w->bounds.h){
-            w->parent->layout_dirty=1;
+            mgl_widget_t *p = w->parent;
+            while(p && p->vtable->layout){
+                p->layout_dirty=1;
+                p=p->parent;
+            }
         }
     }
     mgl_widget_set_dirty(w);

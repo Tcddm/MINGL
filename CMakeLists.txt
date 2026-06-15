@@ -29,6 +29,7 @@ set(MGL_CORE_SOURCES
         tools/mgl_font.c
         src/core/mgl_rect.c
         src/painter/mgl_empty_painter.c
+        src/widget/slider/mgl_slider.c
 )
 
 add_library(mgl_core STATIC ${MGL_CORE_SOURCES})
