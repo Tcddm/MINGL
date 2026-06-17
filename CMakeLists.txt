@@ -28,7 +28,6 @@ set(MGL_CORE_SOURCES
         src/logger/mgl_log.c
         src/event/mgl_event.c
         src/hal/mgl_hal_sw.c
-        tools/mgl_font.c
         src/core/mgl_rect.c
         src/painter/mgl_empty_painter.c
         src/widget/slider/mgl_slider.c
