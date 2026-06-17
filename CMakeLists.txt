@@ -39,40 +39,40 @@ set(MGL_CORE_SOURCES
 add_library(mgl_core STATIC ${MGL_CORE_SOURCES})
 target_include_directories(mgl_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
-
 if(NOT MGL_PLATFORM)
     set(MGL_PLATFORM "sdl")
 endif()
 
-if(MGL_PLATFORM STREQUAL "sdl")
+if(MGL_PLATFORM STREQUAL "sdl" AND EXISTS "${CMAKE_SOURCE_DIR}/platform/sdl/mgl_config_sdl.h")
     target_compile_definitions(mgl_core PUBLIC USE_SDL_CONFIG)
 endif()
 
-
-add_subdirectory(platform/${MGL_PLATFORM})
-
-
-set(MGL_APP_SOURCES
-        platform/${MGL_PLATFORM}/main_${MGL_PLATFORM}.c
-)
-
-if(MGL_DEV_DEMO)
-    list(APPEND MGL_APP_SOURCES
-            demo/dev/count/count_page.c
-            demo/dev/list_test/list_page.c
-            demo/dev/main_page.c
-    )
+if(EXISTS "${CMAKE_SOURCE_DIR}/platform/${MGL_PLATFORM}/CMakeLists.txt")
+    add_subdirectory(platform/${MGL_PLATFORM})
+else()
+    add_library(mgl_platform INTERFACE)
 endif()
 
-add_executable(${PROJECT_NAME} ${MGL_APP_SOURCES})
+if(EXISTS "${CMAKE_SOURCE_DIR}/platform/${MGL_PLATFORM}/main_${MGL_PLATFORM}.c")
+    set(MGL_APP_SOURCES
+            platform/${MGL_PLATFORM}/main_${MGL_PLATFORM}.c
+    )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE mgl_core mgl_platform)
+    if(MGL_DEV_DEMO)
+        foreach(f IN ITEMS
+                demo/dev/main_page.c
+                demo/dev/count/count_page.c
+                demo/dev/list_test/list_page.c
+        )
+            if(EXISTS "${CMAKE_SOURCE_DIR}/${f}")
+                list(APPEND MGL_APP_SOURCES ${f})
+            endif()
+        endforeach()
+    endif()
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE
-        $<$<CONFIG:Debug>:DEBUG=1>
-)
-
-if(MGL_DEV_DEMO)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE MGL_DEMO=1)
-    target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/demo/dev)
+    add_executable(${PROJECT_NAME} ${MGL_APP_SOURCES})
+    target_link_libraries(${PROJECT_NAME} PRIVATE mgl_core mgl_platform)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+            $<$<CONFIG:Debug>:DEBUG=1>
+    )
 endif()
