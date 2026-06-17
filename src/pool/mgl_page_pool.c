@@ -1,3 +1,4 @@
+#include <string.h>
 #include "mgl_page_pool.h"
 #include "logger/mgl_log.h"
 
@@ -31,6 +32,7 @@ void mgl_page_pool_free(void *ptr){
                     "free to offset %u, released %u bytes",
                     (uint32_t)(p-page_pool),
                     (uint32_t)(pool_top-p));
+        memset(p,0,pool_top-p);
         pool_top=p;
     }else{
         MGL_LOG_ERROR(MGL_LOG_TAG_PAGE_POOL,
@@ -41,6 +43,7 @@ void mgl_page_pool_free(void *ptr){
 void mgl_page_pool_reset(void){
     MGL_LOG_INFO(MGL_LOG_TAG_PAGE_POOL,"reset (was %u bytes used)",
                  (uint32_t)(pool_top-page_pool));
+    memset(page_pool,0,pool_top-page_pool);
     pool_top=page_pool;
 }
 uint8_t *mgl_page_pool_get_top(void){

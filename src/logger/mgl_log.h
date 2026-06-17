@@ -11,6 +11,7 @@ extern "C"{
 #define MGL_LOG_TAG_DRAW "Draw"
 #define MGL_LOG_TAG_WIDGET(name) "Widget - " #name
 #define MGL_LOG_TAG_RENDER "Render"
+#define MGL_LOG_TAG_EVENT "Event"
 
 typedef enum{
     MGL_LOG_LEVEL_DBG,

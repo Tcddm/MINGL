@@ -92,6 +92,9 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_event_t *);
         } \
     }while(0)
 
+#define MGL_COMPONENT(name, ...) \
+    static const mgl_widget_blueprint_t *name = __VA_ARGS__
+
 typedef enum{
     MGL_MEASURE_EXACT,
     MGL_MEASURE_AT_MOST,
@@ -149,7 +152,9 @@ typedef enum{
     MGL_WIDGET_TYPE_LINEAR_LAYOUT=0,
     MGL_WIDGET_TYPE_LABEL,
     MGL_WIDGET_TYPE_BUTTON,
-    MGL_WIDGET_TYPE_SLIDER
+    MGL_WIDGET_TYPE_SLIDER,
+    MGL_WIDGET_TYPE_SCROLLBAR,
+    MGL_WIDGET_TYPE_LIST
 } mgl_widget_type;
 
 void mgl_widget_init(mgl_widget_t *widget,const mgl_widget_vtable_t *vtable,const char *name,void *user_data,uint16_t type);

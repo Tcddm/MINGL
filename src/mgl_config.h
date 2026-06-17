@@ -17,6 +17,10 @@ extern "C" {
 #define MGL_MAX_WIDGET_DEPTH 16
 #endif
 
+#ifndef MGL_HIT_TEST_MAX_DEPTH
+#define MGL_HIT_TEST_MAX_DEPTH 32
+#endif
+
 #ifndef MGL_DIRTY_RECT_MAX_COUNT
 #define MGL_DIRTY_RECT_MAX_COUNT 8
 #endif
@@ -28,27 +32,35 @@ extern "C" {
 #ifndef MGL_SCREEN_WIDTH
 #define MGL_SCREEN_WIDTH 480
 #endif
+
 #ifndef MGL_SCREEN_HEIGHT
 #define MGL_SCREEN_HEIGHT 320
 #endif
+
 #ifndef MGL_TOUCH_MAX_FINGERS
 #define MGL_TOUCH_MAX_FINGERS 1
 #endif
+
 #ifndef MGL_HW_ACCEL_FILL_RECT
 #define MGL_HW_ACCEL_FILL_RECT 0
 #endif
+
 #ifndef MGL_HW_ACCEL_BIT_BLT
 #define MGL_HW_ACCEL_BIT_BLT 0
 #endif
+
 #ifndef MGL_FILL_POLYGON_MAX_INTERSECTS //最大交点数
 #define MGL_FILL_POLYGON_MAX_INTERSECTS 128
 #endif
+
 #ifndef MGL_FPS_LOG
 #define MGL_FPS_LOG 1
 #endif
+
 #if MGL_FPS_LOG
 #define MGL_FPS_REPORT_INTERVAL_MS 2000
 #endif
+
 #ifdef __cplusplus
 }
 #endif

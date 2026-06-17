@@ -1,5 +1,5 @@
 #include "mgl_event.h"
-
+#include "logger/mgl_log.h"
 static struct {
     uint8_t finger_id;
     mgl_coord_t down_x,down_y;
@@ -34,7 +34,7 @@ static void remove_finger(int idx){
 static mgl_widget_t *get_deepest_hit_widget(mgl_widget_t *root,mgl_coord_t x,mgl_coord_t y){
     if(!root||!root->visible){return NULL;}
 
-    mgl_widget_t *stack[MGL_MAX_WIDGET_DEPTH];
+    mgl_widget_t *stack[MGL_HIT_TEST_MAX_DEPTH];
     int stack_top=0;
     stack[stack_top++]=root;
     mgl_widget_t *hit=NULL;
@@ -49,8 +49,12 @@ static mgl_widget_t *get_deepest_hit_widget(mgl_widget_t *root,mgl_coord_t x,mgl
 
             mgl_widget_t *child=w->first_child;
             while(child){
-                if(stack_top<MGL_MAX_WIDGET_DEPTH){
-                    stack[stack_top++] = child;
+                if(stack_top<MGL_HIT_TEST_MAX_DEPTH){
+                    stack[stack_top++]=child;
+                }else{
+                    MGL_LOG_ERROR(MGL_LOG_TAG_EVENT,
+                                  "hit-test stack overflow, child(%p) type=%d dropped",
+                                  (void*)child,child->type);
                 }
                 child=child->next_sibling;
             }
@@ -63,9 +67,12 @@ static bool event_bubble(mgl_widget_t *from,mgl_event_t *event){
     mgl_widget_t *current=from;
     while(current){
         if(current->vtable&&current->vtable->on_event){
-            if(current->vtable->on_event(current, event)){
-                return true;
-            }
+            bool consumed=current->vtable->on_event(current,event);
+            MGL_LOG_DBG(MGL_LOG_TAG_EVENT,
+                        "bubble widget(%p) type=%d event=%d → %s",
+                        (void*)current,current->type,event->type,
+                        consumed ? "CONSUMED" : "PASS");
+            if(consumed){return true;}
         }
         current=current->parent;
     }

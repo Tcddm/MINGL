@@ -86,6 +86,7 @@ void mgl_page_back(void){
         return;
     }
     mgl_page_t *old_page=mgl_get_current_page();
+    const char *old_name=old_page->desc->name;
     page_stack_top--;
     mgl_page_pool_free(old_page->pool_start);
     mgl_page_t *new_page=mgl_get_current_page();
@@ -94,7 +95,7 @@ void mgl_page_back(void){
     mgl_hal_clear_screen();
     MGL_LOG_INFO(MGL_LOG_TAG_PAGE,"back to %s page (destroyed %s page)",
                  new_page->desc->name,
-                 old_page->desc->name
+                 old_name
                  );
 }
 
@@ -103,7 +104,7 @@ mgl_page_t *mgl_get_current_page(void){
     return page_stack[page_stack_top-1];
 }
 
-static mgl_widget_t *mgl_widget_find_by_id(mgl_widget_t *root,uint16_t id){
+mgl_widget_t *mgl_widget_find_by_id(mgl_widget_t *root,uint16_t id){
     if(!root||id==0){return NULL;}
 
     mgl_widget_t *stack[MGL_MAX_WIDGET_DEPTH];

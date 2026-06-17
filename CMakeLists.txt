@@ -3,6 +3,8 @@ project(MINGL C)
 
 set(CMAKE_C_STANDARD 11)
 
+option(MGL_DEV_DEMO "Build dev demo pages" ON)
+
 set(MGL_CORE_SOURCES
         src/draw/mgl_draw_ctx.c
         src/draw/mgl_draw_ctx_arc.c
@@ -30,6 +32,8 @@ set(MGL_CORE_SOURCES
         src/core/mgl_rect.c
         src/painter/mgl_empty_painter.c
         src/widget/slider/mgl_slider.c
+        src/widget/scrollbar/mgl_scrollbar.c
+        src/widget/list/mgl_list.c
 )
 
 add_library(mgl_core STATIC ${MGL_CORE_SOURCES})
@@ -41,7 +45,7 @@ if(NOT MGL_PLATFORM)
 endif()
 
 if(MGL_PLATFORM STREQUAL "sdl")
-    target_compile_definitions(mgl_core PRIVATE USE_SDL_CONFIG)
+    target_compile_definitions(mgl_core PUBLIC USE_SDL_CONFIG)
 endif()
 
 
@@ -52,9 +56,23 @@ set(MGL_APP_SOURCES
         platform/${MGL_PLATFORM}/main_${MGL_PLATFORM}.c
 )
 
+if(MGL_DEV_DEMO)
+    list(APPEND MGL_APP_SOURCES
+            demo/dev/count/count_page.c
+            demo/dev/list_test/list_page.c
+            demo/dev/main_page.c
+    )
+endif()
+
 add_executable(${PROJECT_NAME} ${MGL_APP_SOURCES})
+
 target_link_libraries(${PROJECT_NAME} PRIVATE mgl_core mgl_platform)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
         $<$<CONFIG:Debug>:DEBUG=1>
 )
+
+if(MGL_DEV_DEMO)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE MGL_DEMO=1)
+    target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/demo/dev)
+endif()

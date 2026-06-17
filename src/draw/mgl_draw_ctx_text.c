@@ -1,4 +1,66 @@
 #include "mgl_draw_ctx_text.h"
+
+static void draw_glyph_run(mgl_draw_ctx_t *ctx,
+                           mgl_coord_t base_x,mgl_coord_t y,
+                           int run_start,int run_end,
+                           const mgl_painter_t *painter){
+    int w_run=run_end-run_start;
+    if(run_start>=0){
+        mgl_ctx_fill_rect(ctx,(mgl_coord_t)(base_x+run_start),y,
+                          (mgl_coord_t)w_run,1,painter);
+    }
+}
+
+static int scan_byte_runs(mgl_draw_ctx_t *ctx,
+                          mgl_coord_t base_x,mgl_coord_t y,
+                          uint8_t byte,int start_bit,int n_bits,int xx,
+                          const mgl_painter_t *painter){
+    int run_start=-1;
+    int end=xx+n_bits;
+    int bi=start_bit;
+    while(xx<end){
+        if((byte >> bi) & 1){
+            if(run_start<0){
+                run_start=xx;
+            }
+        }else{
+            draw_glyph_run(ctx,base_x,y,run_start,xx,painter);
+            run_start=-1;
+        }
+        xx++;
+        bi--;
+    }
+    draw_glyph_run(ctx,base_x,y,run_start,xx,painter);
+    return n_bits;
+}
+
+static void draw_glyph_row_1bpp(mgl_draw_ctx_t *ctx,
+                                mgl_coord_t base_x,mgl_coord_t y,
+                                const uint8_t *row_bmp,int w,
+                                const mgl_painter_t *painter){
+    int xx=0;
+    while(xx<w){
+        int byte_idx=xx >> 3;
+        int start_bit=7-(xx & 7);
+        uint8_t byte=row_bmp[byte_idx];
+        int bits_left=w-xx;
+        int in_this_byte=(start_bit+1<bits_left)
+                           ? start_bit+1 : bits_left;
+
+        if(in_this_byte==8&&byte==0){
+            xx+=8;
+            continue;
+        }
+        if(in_this_byte==8&&byte==0xFF){
+            draw_glyph_run(ctx,base_x,y,xx,xx+8,painter);
+            xx+=8;
+            continue;
+        }
+        scan_byte_runs(ctx,base_x,y,byte,start_bit,in_this_byte,xx,painter);
+        xx+=in_this_byte;
+    }
+}
+
 static void mgl_draw_glyph(mgl_draw_ctx_t *ctx,mgl_coord_t x,mgl_coord_t y,uint8_t flags,const mgl_glyph_t *glyph,const mgl_font_t *font,const mgl_painter_t *painter) {
     mgl_coord_t px=(mgl_coord_t)(x+glyph->ofs_x);
     mgl_coord_t py=(mgl_coord_t)(y+glyph->ofs_y);
@@ -8,20 +70,13 @@ static void mgl_draw_glyph(mgl_draw_ctx_t *ctx,mgl_coord_t x,mgl_coord_t y,uint8
     uint8_t bpp=font->bpp;
     switch (bpp) {
         case 1:{
-            int bytes_per_row =((w + 7)>>3);
-            for (int yy=0;yy<h;yy++) {
-                for (int xx=0;xx<w;xx++) {
-                    int byte_idx=yy*bytes_per_row+(xx>>3);
-                    int bit=7-(xx&7);
-                    const uint8_t byte=bmp[byte_idx];
-                    uint8_t set=(byte>>bit)&1;
-                    if(set){
-                        mgl_ctx_draw_pixel(ctx,(mgl_coord_t)(px+xx),(mgl_coord_t)(py+yy),painter);
-                    }
-                }
+            int bytes_per_row=(w + 7) >> 3;
+            for(int yy=0;yy<h;yy++){
+                draw_glyph_row_1bpp(ctx,px,(mgl_coord_t)(py+yy),
+                                    bmp+yy*bytes_per_row,w,painter);
             }
+            break;
         }
-        break;
         case 8:
             //暂不支持
             break;
