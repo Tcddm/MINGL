@@ -31,7 +31,10 @@ export default defineConfig({
               { text: '基础绘制', link: '/ctx/base' },
 			  { text: '填充多边形', link: '/ctx/fill_polygon' },
 			  { text: '绘制圆弧', link: '/ctx/arc' },
-			  { text: '绘制圆', link: '/ctx/circle' }
+			  { text: '绘制圆', link: '/ctx/circle' },
+			  { text: '绘制圆角矩形', link: '/ctx/round_rect' },
+			  { text: '绘制位图', link: '/ctx/bitmap' },
+			  { text: '绘制文本', link: '/ctx/text' }
             ]
           }
 		]
@@ -39,7 +42,7 @@ export default defineConfig({
     }},
 	
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
+      { icon: 'github', link: 'https://github.com/Tcddm/MINGL' }
     ],
 	outline: [2, 3]
   },
