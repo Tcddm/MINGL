@@ -5,17 +5,13 @@
 static void button_draw(mgl_draw_ctx_t *ctx){
     mgl_widget_t *self=ctx->widget;
     mgl_button_t *button=container_of(self,mgl_button_t,base);
-
-    if(button->background.type!=MGL_PAINTER_TYPE_EMPTY){
-        mgl_painter_t bg=button->background;
-        if (button->state==MGL_BUTTON_STATE_PRESSED) {
-            bg.solid_color.value=(bg.solid_color.value>>1)&0x7BEF;
-        }
-        mgl_ctx_fill_round_rect(ctx,self->bounds.x,self->bounds.y,
+    mgl_painter_t bg=button->background;
+    if(button->state==MGL_BUTTON_STATE_PRESSED){
+        bg.solid_color.value=(bg.solid_color.value>>1)&0x7BEF;
+    }
+    mgl_ctx_fill_round_rect(ctx,self->bounds.x,self->bounds.y,
                                 self->bounds.w,self->bounds.h,
                                 button->round_radius,&bg);
-    }
-
     mgl_coord_t content_x=(mgl_coord_t)(self->bounds.x+button->padding);
     mgl_coord_t content_y=(mgl_coord_t)(self->bounds.y+button->padding);
     mgl_coord_t content_w=(mgl_coord_t)(self->bounds.w-button->padding*2);

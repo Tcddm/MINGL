@@ -179,10 +179,9 @@ static void on_scrollbar_move(int32_t position,void *user_data){
 static void draw(mgl_draw_ctx_t *ctx){
     mgl_widget_t *self=ctx->widget;
     mgl_list_t *list=container_of(self,mgl_list_t,base);
-    if(list->painter.type!=MGL_PAINTER_TYPE_EMPTY){
-        mgl_ctx_fill_rect(ctx,self->bounds.x,self->bounds.y,
+    mgl_ctx_fill_rect(ctx,self->bounds.x,self->bounds.y,
                           self->bounds.w,self->bounds.h,&list->painter);
-    }
+
 
 }
 

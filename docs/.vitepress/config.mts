@@ -10,6 +10,7 @@ export default defineConfig({
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: '首页', link: '/' },
+	  { text: 'Releases', link: 'https://github.com/Tcddm/MINGL/releases' }
     ],
 
     sidebar:{ 
@@ -35,6 +36,13 @@ export default defineConfig({
 			  { text: '绘制圆角矩形', link: '/ctx/round_rect' },
 			  { text: '绘制位图', link: '/ctx/bitmap' },
 			  { text: '绘制文本', link: '/ctx/text' }
+            ]
+          },
+		  {
+            text: '渲染器',
+            collapsed: false,
+            items: [
+              { text: '渲染器', link: '/render' }
             ]
           }
 		]

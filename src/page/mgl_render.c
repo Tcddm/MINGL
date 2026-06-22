@@ -146,9 +146,12 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
     bool has_clear=false;
 
     while(w){
+        // #region mgl_render_widget_step1
         //不可见则跳过整个子树
         if(!w->visible){goto next;}
+        // #endregion
 
+        // #region mgl_render_widget_step2
         //需要重排则调用 layout
         uint8_t was_layout_dirty=w->layout_dirty;
         if(was_layout_dirty&&w->vtable->layout){
@@ -158,11 +161,15 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
             w->vtable->layout(w,&w->bounds);
             w->layout_dirty=0;
         }
+        // #endregion
 
+        // #region mgl_render_widget_step3
         //收集局部脏矩形
         mgl_rect_t dirty_rects[MGL_DIRTY_RECT_MAX_COUNT];
         uint8_t dirty_count=render_gather_dirty_rects(w,dirty_rects);
+        // #endregion
 
+        // #region mgl_render_widget_step4
         //逐矩形绘制和波及重绘
         mgl_rect_t merged_clear=cur_clear;
         bool has_merged_clear=has_clear;
@@ -173,7 +180,7 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
                 if(!mgl_rect_intersect(&dirty_rects[i],&cur_clip,&draw_area)){
                     continue;
                 }
-
+                // #region mgl_render_widget_step5
                 if(w->vtable->draw){
                     MGL_LOG_DBG(MGL_LOG_TAG_RENDER,
                                 "draw widget(%p): clip=(%d,%d,%d,%d) DIRTY (#%d/%d)",
@@ -183,6 +190,8 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
                     mgl_ctx_init(&ctx,w,&draw_area);
                     w->vtable->draw(&ctx);
                 }
+                // #endregion
+                
                 //累积到 merged_clear,子控件需要感知本层全部绘制区域
                 if(has_merged_clear){
                     mgl_rect_union(&merged_clear, &draw_area, &merged_clear);
@@ -196,6 +205,7 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
             //不脏但被祖先波及区覆盖要求强制重绘
             mgl_rect_t draw_area;
             if(mgl_rect_intersect(&w->bounds,&cur_clear,&draw_area)){
+                // #region mgl_render_widget_step5
                 if(w->vtable->draw){
                     MGL_LOG_DBG(MGL_LOG_TAG_RENDER,
                                 "draw widget(%p): clip=(%d,%d,%d,%d) CLEARED",
@@ -204,6 +214,7 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
                     mgl_ctx_init(&ctx,w,&draw_area);
                     w->vtable->draw(&ctx);
                 }
+                // #endregion
                 if(has_merged_clear){
                     mgl_rect_union(&merged_clear,&draw_area,&merged_clear);
                 }else{
@@ -213,11 +224,15 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
             }
             w->dirty=0;
         }
+        // #endregion
 
+        // #region mgl_render_widget_step5_5
         //子控件波及清空区（本层所有脏矩形绘制区域的合并结果）
         mgl_rect_t next_clear=merged_clear;
         bool next_has_clear=has_merged_clear;
+        // #endregion
 
+        // #region mgl_render_widget_step6
         //递归子控件
         if(w->first_child){
             if(depth>=MGL_MAX_WIDGET_DEPTH){
@@ -239,11 +254,15 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
             w=w->first_child;
             continue;
         }
+        // #endregion
 
+        // #region mgl_render_widget_step7_1
         //本控件处理完毕，清理状态
         w->dirty=0;
         w->prev_bounds=w->bounds;
+        // #endregion
 
+        // #region mgl_render_widget_step7_2
         next:
         //寻找下一兄弟，若无则回溯至父控件
         while(w&&!w->next_sibling){
@@ -260,6 +279,7 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
             }
         }
         if(w){w=w->next_sibling;}
+        // #endregion
     }
 }
 
