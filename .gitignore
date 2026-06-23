@@ -1,10 +1,12 @@
-/tools/
+/tools/.venv/
+/tools/config/
+/tools/font/
 /platform/
 /cmake-build-debug/
-
-/MiSans-Normal.ttf
 /docs/run.bat
 /docs/node_modules/
 /docs/.vitepress/cache/
 /.idea/
 /demo/
+/generated/
+/MiSans-Normal.ttf

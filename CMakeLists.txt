@@ -35,6 +35,9 @@ set(MGL_CORE_SOURCES
         src/widget/list/mgl_list.c
 )
 
+file(GLOB MGL_FONT_SOURCES generated/font/mgl_*_font_*.c)
+list(APPEND MGL_CORE_SOURCES ${MGL_FONT_SOURCES})
+
 add_library(mgl_core STATIC ${MGL_CORE_SOURCES})
 target_include_directories(mgl_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
 

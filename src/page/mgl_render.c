@@ -180,7 +180,6 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
                 if(!mgl_rect_intersect(&dirty_rects[i],&cur_clip,&draw_area)){
                     continue;
                 }
-                // #region mgl_render_widget_step5
                 if(w->vtable->draw){
                     MGL_LOG_DBG(MGL_LOG_TAG_RENDER,
                                 "draw widget(%p): clip=(%d,%d,%d,%d) DIRTY (#%d/%d)",
@@ -190,7 +189,6 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
                     mgl_ctx_init(&ctx,w,&draw_area);
                     w->vtable->draw(&ctx);
                 }
-                // #endregion
                 
                 //累积到 merged_clear,子控件需要感知本层全部绘制区域
                 if(has_merged_clear){
@@ -205,7 +203,6 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
             //不脏但被祖先波及区覆盖要求强制重绘
             mgl_rect_t draw_area;
             if(mgl_rect_intersect(&w->bounds,&cur_clear,&draw_area)){
-                // #region mgl_render_widget_step5
                 if(w->vtable->draw){
                     MGL_LOG_DBG(MGL_LOG_TAG_RENDER,
                                 "draw widget(%p): clip=(%d,%d,%d,%d) CLEARED",
@@ -214,7 +211,6 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
                     mgl_ctx_init(&ctx,w,&draw_area);
                     w->vtable->draw(&ctx);
                 }
-                // #endregion
                 if(has_merged_clear){
                     mgl_rect_union(&merged_clear,&draw_area,&merged_clear);
                 }else{
@@ -226,7 +222,7 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
         }
         // #endregion
 
-        // #region mgl_render_widget_step5_5
+        // #region mgl_render_widget_step5
         //子控件波及清空区（本层所有脏矩形绘制区域的合并结果）
         mgl_rect_t next_clear=merged_clear;
         bool next_has_clear=has_merged_clear;

@@ -24,7 +24,7 @@ typedef struct {
     MGL_WIDGET_PAINTER_FIELD
 } mgl_label_t;
 
-#define MGL_TEXT(...) \
+#define MGL_LABEL(...) \
     &((mgl_widget_blueprint_t){ \
         .init=mgl_label_init, \
         .size=sizeof(mgl_label_t), \

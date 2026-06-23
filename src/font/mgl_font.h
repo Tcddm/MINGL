@@ -26,7 +26,11 @@ typedef struct {
     const uint8_t *bmp;       //位图数据
 } mgl_font_t;
 
-extern const mgl_font_t mgl_font_16px;
+#define MGL_STR_SIZE(s,size) (s),.font=&mgl_font_##size##px
+#define MGL_FMT_SIZE(fmt,size) (fmt)
+#define MGL_FMT(fmt) (fmt)
+
+#include "../generated/font/mgl_font_gen.h"
 
 #ifdef __cplusplus
 }
