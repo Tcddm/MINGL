@@ -271,11 +271,13 @@ void *mgl_linear_layout_init(void *memory,const void *args){
     MGL_WIDGET_ROUND_RADIUS_FIELD_HANDLE(layout,layout_args);
     MGL_WIDGET_ACTION_HANDLER_FIELD_HANDLE(layout,layout_args);
     const mgl_widget_blueprint_t *const *child_bp=layout_args->children;
-    while(*child_bp){
-        mgl_widget_t *child=mgl_blueprint_collect(*child_bp,&layout->base);
-        if(child){
+    if(child_bp){
+        while(*child_bp){
+            mgl_widget_t *child=mgl_blueprint_collect(*child_bp,&layout->base);
+            if(child){
+            }
+            child_bp++;
         }
-        child_bp++;
     }
     return &layout->base;
 }

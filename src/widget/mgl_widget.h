@@ -7,8 +7,11 @@
 extern "C"{
 #endif
 
+// #region mgl_action_handler_t
 typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_event_t *);
+// #endregion
 
+// #region MGL_WIDGET_ACTION_HANDLE_ACTION
 #define MGL_WIDGET_ACTION_HANDLE_ACTION(custom_widget,self,event,handled) \
     do{ \
         mgl_action_type_t __act=mgl_widget_get_action(self,event); \
@@ -17,6 +20,7 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_event_t *);
             (handled)=(custom_widget)->action_handler(self,&__ae); \
         } \
     } while(0)
+// #endregion
 
 #define MGL_WIDGET_ACTION_HANDLER \
     mgl_action_handler_t action_handler;

@@ -30,7 +30,9 @@ typedef struct {
 #define MGL_FMT_SIZE(fmt,size) (fmt)
 #define MGL_FMT(fmt) (fmt)
 
+#if MGL_TOOL_ACCEL_FONT_GEN
 #include "../generated/font/mgl_font_gen.h"
+#endif
 
 #ifdef __cplusplus
 }

@@ -10,14 +10,21 @@ export default defineConfig({
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: '首页', link: '/' },
-	  { text: 'Releases', link: 'https://github.com/Tcddm/MINGL/releases' }
+      { text: 'Releases', link: 'https://github.com/Tcddm/MINGL/releases' }
     ],
 
-    sidebar:{ 
-	"/":{
-		base: "/",
-        items:[
-			{
+    sidebar: {
+      "/": {
+        base: "/",
+        items: [
+		  {
+            text: 'MINGL',
+            collapsed: false,
+            items: [
+              { text: '类型表', link: '/core/types' }
+            ]
+          },
+          {
             text: '硬件抽象层（HAL）',
             collapsed: false,
             items: [
@@ -30,29 +37,46 @@ export default defineConfig({
             items: [
               { text: '裁剪系统概述', link: '/ctx' },
               { text: '基础绘制', link: '/ctx/base' },
-			  { text: '填充多边形', link: '/ctx/fill_polygon' },
-			  { text: '绘制圆弧', link: '/ctx/arc' },
-			  { text: '绘制圆', link: '/ctx/circle' },
-			  { text: '绘制圆角矩形', link: '/ctx/round_rect' },
-			  { text: '绘制位图', link: '/ctx/bitmap' },
-			  { text: '绘制文本', link: '/ctx/text' }
+              { text: '填充多边形', link: '/ctx/fill_polygon' },
+              { text: '绘制圆弧', link: '/ctx/arc' },
+              { text: '绘制圆', link: '/ctx/circle' },
+              { text: '绘制圆角矩形', link: '/ctx/round_rect' },
+              { text: '绘制位图', link: '/ctx/bitmap' },
+              { text: '绘制文本', link: '/ctx/text' }
             ]
           },
-		  {
-            text: '渲染器',
+          {
+            text: '子系统',
             collapsed: false,
             items: [
-              { text: '渲染器', link: '/render' }
+              { text: '渲染器', link: '/subsystem/render' },
+			  { text: '事件系统', link: '/subsystem/event' },
+			  { text: '动作系统', link: '/subsystem/action' }
+            ]
+          },
+          {
+            text: '控件与声明式DSL',
+            collapsed: false,
+            items: [
+              { text: '概述', link: '/widget' },
+			  { text: '页面定义指南', link: '/widget/define_page' },
+              {
+                text: '内置控件',
+                collapsed: false,
+                items: [
+                  { text: 'MGL_LINEAR_LAYOUT', link: '/widget/layout/linear_layout' }
+                ]
+              }
             ]
           }
-		]
-			
-    }},
-	
+        ]
+      }
+    },
+
     socialLinks: [
       { icon: 'github', link: 'https://github.com/Tcddm/MINGL' }
     ],
-	outline: [2, 3]
+    outline: [2, 3]
   },
   markdown: {
     container: {
@@ -62,5 +86,5 @@ export default defineConfig({
       infoLabel: '信息',
       detailsLabel: '详细信息'
     }
-  }
+  },
 })

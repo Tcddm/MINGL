@@ -10,17 +10,22 @@ extern "C"{
 
 typedef struct mgl_painter_t mgl_painter_t;
 
+// #region mgl_painter_vtable_t
 typedef struct {
     void (*fill_rect)(const mgl_painter_t *self,mgl_coord_t x,mgl_coord_t y,mgl_coord_t w,mgl_coord_t h);
     void (*set_pixel)(const mgl_painter_t *self,mgl_coord_t x,mgl_coord_t y);
 } mgl_painter_vtable_t;
+// #endregion
 
+// #region mgl_painter_type_t
 typedef enum{
     MGL_PAINTER_TYPE_EMPTY=0,
     MGL_PAINTER_TYPE_SOLID,
     MGL_PAINTER_TYPE_CUSTOM
 } mgl_painter_type_t;
+// #endregion
 
+// #region mgl_painter_t
 struct mgl_painter_t {
     uint8_t type;
     union {
@@ -28,6 +33,7 @@ struct mgl_painter_t {
         const mgl_painter_vtable_t *vtable;
     };
 };
+// #endregion
 
 extern const mgl_painter_vtable_t g_mgl_empty_painter_vtable;
 

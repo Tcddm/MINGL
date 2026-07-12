@@ -2,7 +2,7 @@
 #include "widget/mgl_layout_utils.h"
 
 
-static void button_draw(mgl_draw_ctx_t *ctx){
+static void draw(mgl_draw_ctx_t *ctx){
     mgl_widget_t *self=ctx->widget;
     mgl_button_t *button=container_of(self,mgl_button_t,base);
     mgl_painter_t bg=button->background;
@@ -60,7 +60,7 @@ static void button_draw(mgl_draw_ctx_t *ctx){
 
 }
 
-static void button_measure(mgl_widget_t *self,
+static void measure(mgl_widget_t *self,
                            mgl_measure_constraint_t cw,
                            mgl_measure_constraint_t ch,
                            mgl_coord_t *out_w,mgl_coord_t *out_h){
@@ -95,7 +95,8 @@ static void button_measure(mgl_widget_t *self,
     MGL_MEASURE_RESOLVE(self->pref_h, natural_h, ch, out_h);
 }
 
-static bool button_on_event(mgl_widget_t *self,const mgl_event_t *event){
+// #region on_event
+static bool on_event(mgl_widget_t *self,const mgl_event_t *event){
     mgl_button_t *button=container_of(self,mgl_button_t,base);
 
     if(event->type==MGL_EVENT_TOUCH_DOWN){
@@ -114,11 +115,12 @@ static bool button_on_event(mgl_widget_t *self,const mgl_event_t *event){
 
     return user_handled;
 }
+// #endregion
 
 static const mgl_widget_vtable_t vtable={
-        .draw=button_draw,
-        .on_event=button_on_event,
-        .measure=button_measure,
+        .draw=draw,
+        .on_event=on_event,
+        .measure=measure,
         .layout=NULL
 };
 void *mgl_button_init(void *memory,const void *args){

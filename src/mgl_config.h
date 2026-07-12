@@ -61,6 +61,10 @@ extern "C" {
 #define MGL_FPS_REPORT_INTERVAL_MS 2000
 #endif
 
+#ifndef MGL_TOOL_ACCEL_FONT_GEN
+#define MGL_TOOL_ACCEL_FONT_GEN 1
+#endif
+
 #ifdef __cplusplus
 }
 #endif

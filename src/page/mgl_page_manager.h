@@ -11,6 +11,8 @@ extern "C"{
 extern const mgl_page_descriptor_t g_mgl_page_registry[];
 extern const uint8_t g_mgl_page_registry_count;
 
+#define MGL_EXPORT_PAGE(name) mgl_page_t *name(void);
+
 #define MGL_PAGE_ENTRY(name,make_func) {(name),(make_func)}
 
 #define MGL_PAGE_WIDGETS_START(name) \

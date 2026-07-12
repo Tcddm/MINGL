@@ -7,22 +7,28 @@
 extern "C"{
 #endif
 
+// #region mgl_linear_direction_t
 typedef enum{
     MGL_LINEAR_HORIZONTAL,
     MGL_LINEAR_VERTICAL
 } mgl_linear_direction_t;
+// #endregion
 
+// #region mgl_linear_align_t
 typedef enum {
     MGL_ALIGN_START=0,
-    MGL_ALIGN_CENTER=1,
-    MGL_ALIGN_END=2,
+    MGL_ALIGN_CENTER,
+    MGL_ALIGN_END,
 } mgl_linear_align_t;
+// #endregion
 
+// #region mgl_layout_item_t
 typedef struct {
     mgl_coord_t width;
     mgl_coord_t height;
     mgl_rect_t  bounds;
 } mgl_layout_item_t;
+// #endregion
 
 
 void mgl_layout_linear_measure(const mgl_layout_item_t *items,uint8_t count,

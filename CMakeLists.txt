@@ -3,7 +3,8 @@ project(MINGL C)
 
 set(CMAKE_C_STANDARD 11)
 
-option(MGL_DEV_DEMO "Build dev demo pages" ON)
+option(MGL_DEMO_DEV "Build dev demo pages" ON)
+option(MGL_TOOL_ACCEL_FONT_GEN "Auto-generate fonts" ON)
 
 set(MGL_CORE_SOURCES
         src/draw/mgl_draw_ctx.c
@@ -35,11 +36,18 @@ set(MGL_CORE_SOURCES
         src/widget/list/mgl_list.c
 )
 
-file(GLOB MGL_FONT_SOURCES generated/font/mgl_*_font_*.c)
-list(APPEND MGL_CORE_SOURCES ${MGL_FONT_SOURCES})
+if(MGL_TOOL_ACCEL_FONT_GEN)
+    file(GLOB MGL_FONT_GENERATED ${CMAKE_SOURCE_DIR}/generated/font/mgl_*_font_*.c)
+    list(APPEND MGL_CORE_SOURCES ${MGL_FONT_GENERATED})
+endif()
 
 add_library(mgl_core STATIC ${MGL_CORE_SOURCES})
 target_include_directories(mgl_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
+
+if(MGL_TOOL_ACCEL_FONT_GEN)
+    target_compile_definitions(mgl_core PUBLIC MGL_TOOL_ACCEL_FONT_GEN=1)
+    target_include_directories(mgl_core PUBLIC ${CMAKE_SOURCE_DIR}/generated/font)
+endif()
 
 if(NOT MGL_PLATFORM)
     set(MGL_PLATFORM "sdl")
@@ -60,21 +68,14 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/platform/${MGL_PLATFORM}/main_${MGL_PLATFORM}.c")
             platform/${MGL_PLATFORM}/main_${MGL_PLATFORM}.c
     )
 
-    if(MGL_DEV_DEMO)
-        foreach(f IN ITEMS
-                demo/dev/main_page.c
-                demo/dev/count/count_page.c
-                demo/dev/list_test/list_page.c
-        )
-            if(EXISTS "${CMAKE_SOURCE_DIR}/${f}")
-                list(APPEND MGL_APP_SOURCES ${f})
-            endif()
-        endforeach()
+    if(MGL_DEMO_DEV AND EXISTS "${CMAKE_SOURCE_DIR}/demo/dev/CMakeLists.txt")
+        add_subdirectory(demo/dev)
     endif()
 
     add_executable(${PROJECT_NAME} ${MGL_APP_SOURCES})
-    target_link_libraries(${PROJECT_NAME} PRIVATE mgl_core mgl_platform)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE
-            $<$<CONFIG:Debug>:DEBUG=1>
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+            mgl_core
+            mgl_platform
+            $<$<BOOL:${MGL_DEMO_DEV}>:mgl_demo_dev>
     )
 endif()
