@@ -96,7 +96,7 @@ def generate_mgl_font(
 ):
     if not os.path.exists(font_path):
         print(f"❌ 字体文件不存在：{font_path}")
-        return
+        sys.exit(1)
 
     ft = freetype.Face(font_path)
     ft.set_pixel_sizes(font_size, font_size)

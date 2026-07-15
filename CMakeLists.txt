@@ -114,7 +114,7 @@ foreach(line ${CONFIG_LINES})
 endforeach()
 
 if(MGL_TOOL_ACCEL_FONT_GEN)
-    file(GLOB MGL_FONT_GENERATED ${CMAKE_SOURCE_DIR}/generated/font/mgl_*_font_*.c)
+    file(GLOB MGL_FONT_GENERATED CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/generated/font/mgl_*_font_*.c)
     list(APPEND MGL_CORE_SOURCES ${MGL_FONT_GENERATED})
 endif()
 
