@@ -1,0 +1,97 @@
+mainmenu "MINGL 配置"
+
+choice
+    prompt "目标平台"
+    default MGL_PLATFORM_SDL
+config MGL_PLATFORM_SDL
+    bool "SDL2模拟器"
+endchoice
+
+menu "硬件加速特性"
+
+config MGL_HW_ACCEL_FILL_RECT
+    bool "填充矩形"
+config MGL_HW_ACCEL_BIT_BLT
+    bool "位图传输"
+endmenu	
+	
+config MGL_SCREEN_WIDTH
+    int "屏幕宽度（px）"
+    default 480
+config MGL_SCREEN_HEIGHT
+    int "屏幕高度（px）"
+    default 320
+config MGL_PAGE_POOL_SIZE
+    int "页面池大小（bytes）"
+    default 2048
+config MGL_PAGE_STACK_MAX_DEPTH
+    int "页面栈深度"
+    default 8
+config MGL_MAX_WIDGET_DEPTH
+    int "控件最大嵌套深度"
+    default 8
+config MGL_HIT_TEST_MAX_DEPTH
+    int "事件命中测试最大深度"
+    default 12	
+config MGL_DIRTY_RECT_MAX_COUNT
+    int "控件区域中最大合并矩形数"
+    default 4
+config MGL_TOUCH_MAX_FINGERS
+    int "触屏最多点数"
+    default 1
+config MGL_FILL_POLYGON_MAX_INTERSECTS
+    int "填充多边形最大交点数"
+    default 128
+config MGL_FPS_LOG
+    bool "FPS日志输出"
+    default y
+config MGL_FPS_REPORT_INTERVAL_MS
+    int "FPS日志输出间隔（ms）"
+    default 2000
+	depends on MGL_FPS_LOG
+config MGL_DEMO
+    bool "启用示例界面"
+    default y
+menu "示例界面"
+    depends on MGL_DEMO
+    choice
+        prompt "选择要编译的示例"
+        default MGL_DEMO_HELLO
+		config MGL_DEMO_HELLO
+            bool "Hello示例"
+        config MGL_DEMO_DEV
+            bool "开发示例 (dev)"
+    endchoice
+
+endmenu
+menu "字体生成工具"
+
+config MGL_TOOL_ACCEL_FONT_GEN
+    bool "启用字体生成工具"
+    default y
+
+config MGL_FONT_GEN_SCAN_PATH
+    string "源码扫描路径"
+    default "demo"
+	depends on !MGL_DEMO
+    depends on MGL_TOOL_ACCEL_FONT_GEN
+
+config MGL_FONT_GEN_FONT_PATH
+    string "TTF字体目录"
+    default "tools/font"
+    depends on MGL_TOOL_ACCEL_FONT_GEN
+
+config MGL_FONT_GEN_DEFAULT_FONT
+    string "默认字体文件名"
+    default "MiSans-Normal.ttf"
+    depends on MGL_TOOL_ACCEL_FONT_GEN
+
+config MGL_FONT_GEN_DEFAULT_SIZE
+    int "默认字号（px）"
+    default 16
+    depends on MGL_TOOL_ACCEL_FONT_GEN
+
+endmenu	
+
+
+source "platform/sdl/Kconfig"

@@ -1,0 +1,11 @@
+if MGL_PLATFORM_SDL
+
+config MGL_HW_ACCEL_FILL_RECT
+    default y
+config MGL_HW_ACCEL_BIT_BLT
+    default y
+config MGL_EGG_ENABLE
+    bool "Easter egg"
+    default n
+
+endif

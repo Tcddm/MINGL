@@ -1,15 +1,19 @@
 from pathlib import Path
-import re
-import sys
-import freetype
-import os
-import configparser
-import questionary
+import re,sys,os,freetype,kconfiglib,argparse
 
-ASCII_PRINTABLE = ''.join(chr(i) for i in range(0x20, 0x7F))
-CONFIG_FILE = Path("./config/font_gen.ini")
-OUTPUT_DIR  = "../generated/font"
+ASCII_PRINTABLE=''.join(chr(i) for i in range(0x20, 0x7F))
+ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+KCONFIG=os.path.join(ROOT, "Kconfig")
+CONFIG=os.path.join(ROOT, ".config")
+OUTPUT_DIR=os.path.join(ROOT, "generated", "font")
+os.environ["srctree"]=ROOT
 
+if sys.stdout.encoding!='utf-8':
+    if hasattr(sys.stdout,'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8')
+    else:
+        import io
+        sys.stdout=io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
 
 # -----------------------------------------------------------------------------
 # 1. 从 FreeType mono 位图直接提取 1bpp 高位在前数据
@@ -265,82 +269,40 @@ def update_header(sizes, default_size):
         print(f"✅ 已生成 {h_file}")
 
 # -----------------------------------------------------------------------------
-# 配置向导
-# -----------------------------------------------------------------------------
-def config_font_gen():
-    scan_path=questionary.text(
-        message="请输入扫描目录：",
-        default="../demo"
-    ).ask()
-    font_path=questionary.text(
-        message="请输入字体目录：",
-        default="./font"
-    ).ask()
-    while True:
-        default_font=questionary.text(
-            message="请输入默认字体文件名：",
-            default="MiSans-Normal.ttf"
-        ).ask()
-        if os.path.isfile(Path(font_path)/default_font):
-            break
-        else:
-            print("文件不存在")
-    font_size=questionary.text(
-        message="请输入默认字体大小：",
-        default="16"
-    ).ask()
-
-    cfg=configparser.ConfigParser()
-    cfg.add_section("font")
-    cfg.set("font","scan_path",scan_path)
-    cfg.set("font","font_path",font_path)
-    cfg.set("font","default_font",default_font)
-    cfg.set("font","default_font_size",font_size)
-    CONFIG_FILE.parent.mkdir(exist_ok=True)
-    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
-        cfg.write(f)
-    print(f"\n✅ 配置已保存至 {CONFIG_FILE}")
-
-    update_header([int(font_size)], int(font_size))
-    return cfg
-
-# -----------------------------------------------------------------------------
 # 程序入口
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
-    args=sys.argv
-    if len(args)==2 and args[1]=="config":
-        config_font_gen()
-        exit()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--scan-path',default=None,help='强制指定源码扫描目录')
+    args=parser.parse_args()
 
-    while True:
-        if CONFIG_FILE.is_file():
-            print("检测到已有配置文件，直接读取配置")
-            config = configparser.ConfigParser()
-            config.read(CONFIG_FILE, encoding="utf-8")
+    kconf = kconfiglib.Kconfig(KCONFIG)
+    if os.path.exists(CONFIG):
+        kconf.load_config(CONFIG, replace=False)
 
-            scan_path = config.get("font", "scan_path")
-            font_path = config.get("font", "font_path")
-            default_font = config.get("font", "default_font")
-            default_font_size=int(config.get("font","default_font_size"))
+    if args.scan_path:
+        scan_path=args.scan_path
+        if not os.path.isabs(scan_path):
+            scan_path=os.path.join(ROOT,scan_path)
+    else:
+        scan_path=os.path.join(ROOT, kconf.syms["MGL_FONT_GEN_SCAN_PATH"].str_value)
+    font_dir=os.path.join(ROOT, kconf.syms["MGL_FONT_GEN_FONT_PATH"].str_value)
+    default_font=kconf.syms["MGL_FONT_GEN_DEFAULT_FONT"].str_value
+    default_size=int(kconf.syms["MGL_FONT_GEN_DEFAULT_SIZE"].str_value)
 
-            print("扫描目录：", scan_path)
-            charsets=scan_sources([scan_path], default_font_size)
-            if not charsets:
-                print("未扫描到MGL_STR")
-                exit()
+    print("扫描目录:", scan_path)
+    charsets = scan_sources([scan_path], default_size)
+    if not charsets:
+        print("未扫描到 MGL_STR/MGL_FMT")
+        sys.exit(0)
 
-            print(f"📝 发现字号: {sorted(charsets.keys())}")
-            for sz in sorted(charsets):
-                print(f"   {sz}px: {len(charsets[sz])} 个字符")
+    print(f"发现字号: {sorted(charsets.keys())}")
+    for sz in sorted(charsets):
+        print(f"  {sz}px: {len(charsets[sz])} 个字符")
 
-            print("🔧 生成字体...")
-            full_font = Path(font_path) / default_font
-            sizes = generate_all(charsets,1, str(full_font))
+    print("生成字体...")
+    sizes = generate_all(charsets, 1, os.path.join(font_dir, default_font))
 
-            print("📄 更新头文件...")
-            update_header(sizes, default_font_size)
-            break
-        else:
-            print("未检测到配置文件，进入配置向导")
-            config = config_font_gen()
+    print("更新头文件...")
+    update_header(sizes, default_size)
+    print("完成")
