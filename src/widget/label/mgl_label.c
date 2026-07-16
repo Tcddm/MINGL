@@ -27,9 +27,7 @@ static void measure(mgl_widget_t *self,
 
 static const mgl_widget_vtable_t vtable={
         .draw=draw,
-        .on_event=NULL,
-        .measure=measure,
-        .layout=NULL
+        .measure=measure
 };
 void *mgl_label_init(void *memory,const void *args){
     const mgl_label_args_t *label_args=(const mgl_label_args_t *)args;

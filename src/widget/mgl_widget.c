@@ -11,6 +11,8 @@ void mgl_widget_init(mgl_widget_t *widget,const mgl_widget_vtable_t *vtable,cons
     widget->parent=NULL;
     widget->first_child=NULL;
     widget->next_sibling=NULL;
+
+    widget->action_handler=NULL;
     
     widget->dirty=1;
     widget->layout_dirty=0;
@@ -42,11 +44,4 @@ void mgl_widget_add_child(mgl_widget_t *parent,mgl_widget_t *child){
         }
         last->next_sibling=child;
     }
-}
-
-mgl_action_type_t mgl_widget_get_action(mgl_widget_t *self,const mgl_event_t *event){
-    if (event->type==MGL_EVENT_TOUCH_UP) {
-        return MGL_ACTION_CLICK;
-    }
-    return MGL_ACTION_NONE;
 }

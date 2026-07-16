@@ -63,17 +63,34 @@ static mgl_widget_t *get_deepest_hit_widget(mgl_widget_t *root,mgl_coord_t x,mgl
     return hit;
 }
 
+mgl_action_type_t mgl_event_default_get_action(mgl_widget_t *self,const mgl_event_t *event){
+    if(event->type==MGL_EVENT_TOUCH_UP){
+        return MGL_ACTION_CLICK;
+    }
+    return MGL_ACTION_NONE;
+}
+
 static bool event_bubble(mgl_widget_t *from,mgl_event_t *event){
     mgl_widget_t *current=from;
     while(current){
+        bool consumed=false;
         if(current->vtable&&current->vtable->on_event){
-            bool consumed=current->vtable->on_event(current,event);
+            consumed=current->vtable->on_event(current,event);
             MGL_LOG_DBG(MGL_LOG_TAG_EVENT,
                         "bubble widget(%p) type=%d event=%d → %s",
                         (void*)current,current->type,event->type,
                         consumed ? "CONSUMED" : "PASS");
-            if(consumed){return true;}
         }
+        mgl_action_type_t action;
+        if(current->vtable->get_action){
+            action=current->vtable->get_action(current,event);
+        }else{
+            action=mgl_event_default_get_action(current,event);
+        }
+        if(action!=MGL_ACTION_NONE&&current->action_handler){
+            consumed=current->action_handler(current,action);
+        }
+        if(consumed){return true;}
         current=current->parent;
     }
     return false;

@@ -86,20 +86,23 @@ static bool on_event(mgl_widget_t *self,const mgl_event_t *event){
     if(new_val!=s->value){
         s->value=new_val;
         mgl_widget_set_dirty(self);
-        mgl_action_event_t ae={.type=MGL_ACTION_CLICK,.widget=self};
-        if(s->action_handler){
-            s->action_handler(self, &ae);
-        }
     }
     return true;
 }
+}
+
+static mgl_action_type_t get_action(mgl_widget_t *self,const mgl_event_t *event){
+    if(event->type==MGL_EVENT_TOUCH_MOVE||
+        event->type==MGL_EVENT_TOUCH_UP)
+        return MGL_ACTION_VALUE_CHANGED;
+    return MGL_ACTION_NONE;
 }
 
 static const mgl_widget_vtable_t vtable={
         .draw=draw,
         .on_event=on_event,
         .measure=measure,
-        .layout=NULL
+        .get_action=get_action
 };
 
 void *mgl_slider_init(void *memory,const void *args){
@@ -123,7 +126,6 @@ void *mgl_slider_init(void *memory,const void *args){
     MGL_WIDGET_PAINTER_FIELD_HANDLE_NAME(s,sa,track);
     MGL_WIDGET_PAINTER_FIELD_HANDLE_NAME(s,sa,fill);
     MGL_WIDGET_PAINTER_FIELD_HANDLE_NAME(s,sa,thumb);
-    MGL_WIDGET_ACTION_HANDLER_FIELD_HANDLE(s,sa);
 
     return &s->base;
 }

@@ -17,16 +17,13 @@ children|const [mgl_widget_blueprint_t](/core/types#mgl_widget_blueprint_t) **|N
 参数|类型|默认值|说明
 -|-|-|-|
 painter|[mgl_painter_t](/core/types#mgl_painter_t)|EMPTY_PAINTER|背景
-<!--@include: @/snippets/widget_event_args.md-->
 <!--@include: @/snippets/widget_round_radius_args.md-->
 
 ## API
 无
 
-## 事件
-事件类型|触发场景
--|-
-MGL_ACTION_CLICK|点击线性布局触发
+## 动作
+<!--@include: @/snippets/event_default_to_action.md-->
 
 ## 示例
 ### 铺满全屏的白色背景

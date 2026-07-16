@@ -121,8 +121,7 @@ static bool on_event(mgl_widget_t *self, const mgl_event_t *event) {
 static const mgl_widget_vtable_t vtable={
         .draw=draw,
         .on_event=on_event,
-        .measure=measure,
-        .layout=NULL
+        .measure=measure
 };
 
 void *mgl_scrollbar_init(void *memory,const void *args){

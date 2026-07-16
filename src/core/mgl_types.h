@@ -108,18 +108,11 @@ typedef struct{
 // #region mgl_action_type_t
 typedef enum {
     MGL_ACTION_NONE=0,
-    MGL_ACTION_CLICK
+    MGL_ACTION_CLICK,
+    MGL_ACTION_VALUE_CHANGED
 } mgl_action_type_t;
 // #endregion
 
-// #region mgl_action_event_t
-typedef struct{
-    mgl_action_type_t type;
-    mgl_widget_t *widget;
-    union {
-    };
-} mgl_action_event_t;
-// #endregion
 
 #ifdef __cplusplus
 }

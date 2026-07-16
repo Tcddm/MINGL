@@ -241,19 +241,12 @@ static void linear_layout_layout(mgl_widget_t *self, const mgl_rect_t *area) {
 
 }
 
-static bool on_event(mgl_widget_t *self,const mgl_event_t *event){
-    mgl_linear_layout_t *layout=container_of(self,mgl_linear_layout_t,base);
-    bool user_handled=false;
-    MGL_WIDGET_ACTION_HANDLE_ACTION(layout,self,event,user_handled);
-    return user_handled;
-}
-
 static const mgl_widget_vtable_t vtable={
         .draw=draw,
-        .on_event=on_event,
         .measure=linear_layout_measure,
         .layout=linear_layout_layout
 };
+
 void *mgl_linear_layout_init(void *memory,const void *args){
     const mgl_linear_layout_args_t *layout_args=(const mgl_linear_layout_args_t *)args;
     mgl_linear_layout_t *layout=(mgl_linear_layout_t *)memory;
@@ -269,7 +262,6 @@ void *mgl_linear_layout_init(void *memory,const void *args){
     MGL_WIDGET_BASE_FIELD_HANDLE(layout,layout_args);
     MGL_WIDGET_PAINTER_FIELD_HANDLE(layout,layout_args);
     MGL_WIDGET_ROUND_RADIUS_FIELD_HANDLE(layout,layout_args);
-    MGL_WIDGET_ACTION_HANDLER_FIELD_HANDLE(layout,layout_args);
     const mgl_widget_blueprint_t *const *child_bp=layout_args->children;
     if(child_bp){
         while(*child_bp){

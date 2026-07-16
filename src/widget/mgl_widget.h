@@ -8,29 +8,16 @@ extern "C"{
 #endif
 
 // #region mgl_action_handler_t
-typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_event_t *);
+typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_type_t action);
 // #endregion
 
-// #region MGL_WIDGET_ACTION_HANDLE_ACTION
-#define MGL_WIDGET_ACTION_HANDLE_ACTION(custom_widget,self,event,handled) \
-    do{ \
-        mgl_action_type_t __act=mgl_widget_get_action(self,event); \
-        if (__act!=MGL_ACTION_NONE&&(custom_widget)->action_handler){ \
-            mgl_action_event_t __ae={.type= __act,.widget=self}; \
-            (handled)=(custom_widget)->action_handler(self,&__ae); \
-        } \
-    } while(0)
-// #endregion
-
-#define MGL_WIDGET_ACTION_HANDLER \
-    mgl_action_handler_t action_handler;
 
 #define MGL_WIDGET_BASE_ARGS_FIELD \
     mgl_margin_t margin; \
     mgl_coord_t pref_w; \
     mgl_coord_t pref_h; \
-    uint16_t id;
-
+    uint16_t id; \
+    mgl_action_handler_t action_handler;
 
 #define MGL_WIDGET_BASE_FIELD_HANDLE(custom_widget,custom_widget_args) \
     do{ \
@@ -48,6 +35,9 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_event_t *);
         if(custom_widget_args->id!=0){ \
             custom_widget->base.id=custom_widget_args->id; \
         } \
+        if(custom_widget_args->action_handler){ \
+            custom_widget->base.action_handler=custom_widget_args->action_handler; \
+        } \
     }while(0)
 
 
@@ -61,9 +51,6 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_event_t *);
 
 #define MGL_WIDGET_ROUND_RADIUS_FIELD_HANDLE(custom_widget,custom_widget_args) \
     MGL_WIDGET_FIELD_HANDLE(custom_widget,custom_widget_args,round_radius)
-
-#define MGL_WIDGET_ACTION_HANDLER_FIELD_HANDLE(custom_widget,custom_widget_args) \
-    MGL_WIDGET_FIELD_HANDLE(custom_widget,custom_widget_args,action_handler)
 
 #define MGL_MEASURE_RESOLVE(pref_size, natural_size, constraint, out_size) \
     do { \
@@ -120,6 +107,7 @@ typedef struct {
                     mgl_coord_t *out_h);
     void (*layout)(mgl_widget_t *self,
                    const mgl_rect_t *area);
+    mgl_action_type_t (*get_action)(mgl_widget_t *self,const mgl_event_t *event);
 } mgl_widget_vtable_t;
 
 struct mgl_widget_t{
@@ -137,6 +125,8 @@ struct mgl_widget_t{
     mgl_widget_t *parent;                //父控件
     mgl_widget_t *first_child;           //第一个子控件
     mgl_widget_t *next_sibling;          //后一个兄弟
+
+    mgl_action_handler_t action_handler;
 
     uint8_t dirty:1;
     uint8_t layout_dirty:1;
@@ -163,7 +153,6 @@ typedef enum{
 
 void mgl_widget_init(mgl_widget_t *widget,const mgl_widget_vtable_t *vtable,const char *name,void *user_data,uint16_t type);
 void mgl_widget_add_child(mgl_widget_t *parent,mgl_widget_t *child);
-mgl_action_type_t mgl_widget_get_action(mgl_widget_t *self,const mgl_event_t *event);
 
 static inline void mgl_widget_set_dirty(mgl_widget_t *w) {
     while(w){

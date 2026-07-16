@@ -31,7 +31,6 @@ typedef struct {
     uint8_t thumb_w;
     uint8_t thumb_h;
     MGL_WIDGET_BASE_ARGS_FIELD
-    MGL_WIDGET_ACTION_HANDLER
     MGL_WIDGET_PAINTER_ARGS_FIELD_NAME(track)
     MGL_WIDGET_PAINTER_ARGS_FIELD_NAME(fill)
     MGL_WIDGET_PAINTER_ARGS_FIELD_NAME(thumb)
@@ -44,7 +43,6 @@ typedef struct{
     int16_t min,max;
     uint8_t track_h,thumb_w,thumb_h;
     bool dragging;
-    MGL_WIDGET_ACTION_HANDLER
     MGL_WIDGET_PAINTER_FIELD_NAME(track)
     MGL_WIDGET_PAINTER_FIELD_NAME(fill)
     MGL_WIDGET_PAINTER_FIELD_NAME(thumb)

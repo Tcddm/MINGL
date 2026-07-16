@@ -108,20 +108,16 @@ static bool on_event(mgl_widget_t *self,const mgl_event_t *event){
     if(event->type==MGL_EVENT_TOUCH_UP){
         button->state=MGL_BUTTON_STATE_NORMAL;
         mgl_widget_set_dirty(self);
+        return true;
     }
-
-    bool user_handled=false;
-    MGL_WIDGET_ACTION_HANDLE_ACTION(button,self,event,user_handled);
-
-    return user_handled;
+    return false;
 }
 // #endregion
 
 static const mgl_widget_vtable_t vtable={
         .draw=draw,
         .on_event=on_event,
-        .measure=measure,
-        .layout=NULL
+        .measure=measure
 };
 void *mgl_button_init(void *memory,const void *args){
     const mgl_button_args_t *button_args=(const mgl_button_args_t *)args;
@@ -140,7 +136,6 @@ void *mgl_button_init(void *memory,const void *args){
     MGL_WIDGET_ROUND_RADIUS_FIELD_HANDLE(button,button_args);
     MGL_WIDGET_PAINTER_FIELD_HANDLE_NAME(button,button_args,foreground);
     MGL_WIDGET_PAINTER_FIELD_HANDLE_NAME(button,button_args,background);
-    MGL_WIDGET_ACTION_HANDLER_FIELD_HANDLE(button,button_args);
 
     return &button->base;
 }

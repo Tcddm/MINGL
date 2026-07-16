@@ -279,7 +279,6 @@ void *mgl_list_init(void *memory,const void *args){
     MGL_WIDGET_BASE_FIELD_HANDLE(list,la);
     MGL_WIDGET_PAINTER_FIELD_HANDLE(list,la);
     MGL_WIDGET_ROUND_RADIUS_FIELD_HANDLE(list,la);
-    MGL_WIDGET_ACTION_HANDLER_FIELD_HANDLE(list,la);
 
     //item_count
     list->item_count=list->adapter.get_count(list->adapter.user_data);

@@ -13,7 +13,6 @@ typedef struct {
     mgl_widget_t base;
     uint8_t direction;
     mgl_margin_t padding_margin;
-    MGL_WIDGET_ACTION_HANDLER
     MGL_WIDGET_PAINTER_FIELD
     MGL_WIDGET_ROUND_RADIUS_FIELD
     uint8_t cross_align;
@@ -25,7 +24,6 @@ typedef struct {
     uint8_t direction;
     uint8_t cross_align;
     uint8_t main_align;
-    MGL_WIDGET_ACTION_HANDLER
     MGL_WIDGET_BASE_ARGS_FIELD
     MGL_WIDGET_PAINTER_ARGS_FIELD
     MGL_WIDGET_ROUND_RADIUS_FIELD

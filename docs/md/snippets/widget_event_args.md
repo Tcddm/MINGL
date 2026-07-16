@@ -1,1 +1,0 @@
-action_handler|[mgl_action_handler_t](/core/types#mgl_action_handler_t)|NULL|事件处理器

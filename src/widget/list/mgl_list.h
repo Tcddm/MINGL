@@ -36,7 +36,6 @@ typedef struct {
     mgl_scrollbar_args_t scrollbar_args;
 
     MGL_WIDGET_BASE_ARGS_FIELD
-    MGL_WIDGET_ACTION_HANDLER
     MGL_WIDGET_PAINTER_ARGS_FIELD
     MGL_WIDGET_ROUND_RADIUS_FIELD
 } mgl_list_args_t;
@@ -69,7 +68,6 @@ typedef struct {
 
     uint16_t item_count;
 
-    MGL_WIDGET_ACTION_HANDLER
     MGL_WIDGET_PAINTER_FIELD
     MGL_WIDGET_ROUND_RADIUS_FIELD
 } mgl_list_t;

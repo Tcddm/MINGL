@@ -26,7 +26,6 @@ typedef struct {
     uint8_t spacing;
     uint8_t padding;
     MGL_WIDGET_BASE_ARGS_FIELD
-    MGL_WIDGET_ACTION_HANDLER
     MGL_WIDGET_PAINTER_ARGS_FIELD_NAME(foreground)
     MGL_WIDGET_PAINTER_ARGS_FIELD_NAME(background)
     MGL_WIDGET_ROUND_RADIUS_FIELD
@@ -40,7 +39,6 @@ typedef struct {
     uint8_t spacing;
     uint8_t padding;
     uint8_t state;
-    MGL_WIDGET_ACTION_HANDLER
     MGL_WIDGET_PAINTER_FIELD_NAME(foreground)
     MGL_WIDGET_PAINTER_FIELD_NAME(background)
     MGL_WIDGET_ROUND_RADIUS_FIELD

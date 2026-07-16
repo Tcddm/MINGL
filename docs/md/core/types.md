@@ -13,6 +13,8 @@
 <<< @/../../src/core/mgl_types.h#mgl_event_type_t{c}
 ### mgl_event_t
 <<< @/../../src/core/mgl_types.h#mgl_event_t{c}
+### mgl_action_type_t
+<<< @/../../src/core/mgl_types.h#mgl_action_type_t{c}
 ## /widget/mgl_widget.h
 ### mgl_action_handler_t
 <<< @/../../src/widget/mgl_widget.h#mgl_action_handler_t{c}
