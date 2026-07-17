@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-
+// #region MGL_COLOR_RGB565
 
 #define MGL_RGB565_RAW(r,g,b)  ((((r)&0xF8)<<8)|(((g)&0xFC)<<3)|((b)>>3))
 
@@ -19,6 +19,8 @@ extern "C" {
 #define MGL_COLOR_TRANSPARENT  ((mgl_color_t){.value=0x0000,.alpha=0})
 
 #define MGL_COLOR(r,g,b)       ((mgl_color_t){.value=MGL_RGB565_RAW(r,g,b),.alpha=255})
+
+// #endregion
 
 #ifdef __cplusplus
 }

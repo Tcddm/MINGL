@@ -1,8 +1,8 @@
 #ifndef MGL_LINEAR_LAYOUT_H
 #define MGL_LINEAR_LAYOUT_H
 
-#include "widget/mgl_layout_utils.h"
 #include "widget/mgl_widget_blueprint.h"
+#include "widget/mgl_layout_utils.h"
 #include "draw/mgl_draw_ctx_round_rect.h"
 
 #ifdef __cplusplus

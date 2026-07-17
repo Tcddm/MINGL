@@ -86,22 +86,23 @@ static bool on_event(mgl_widget_t *self, const mgl_event_t *event) {
 
     mgl_coord_t thumb_top=(mgl_coord_t)(self->bounds.y+thumb_y);
     mgl_coord_t thumb_bot=(mgl_coord_t)(thumb_top+thumb_h);
-
+    int32_t new_pos;
     switch(event->type){
         case MGL_EVENT_TOUCH_DOWN:
-            //仅当触摸在滑块区域内才拦截
-            if(event->touch.y>=thumb_top&&event->touch.y<thumb_bot){
-                sb->dragging=true;
-                sb->touch_start_y=event->touch.y;
-                sb->position_at_start=sb->position;
-                return true;
+            sb->dragging=true;
+            sb->touch_start_y=event->touch.y;
+            sb->position_at_start=sb->position;
+            new_pos=scrollbar_y_to_position(sb, event->touch.y);
+            if(new_pos!=sb->position&&sb->on_scroll){
+                sb->position=new_pos;
+                sb->on_scroll(new_pos,sb->callback_data);
             }
-            return false;
-
+            mgl_widget_set_dirty(self);
+            return true;
         case MGL_EVENT_TOUCH_MOVE:{
             if(!sb->dragging){return false;}
 
-            int32_t new_pos=scrollbar_y_to_position(sb, event->touch.y);
+            new_pos=scrollbar_y_to_position(sb, event->touch.y);
             if(new_pos!=sb->position&&sb->on_scroll){
                 sb->position=new_pos;
                 sb->on_scroll(new_pos,sb->callback_data);
@@ -130,14 +131,14 @@ void *mgl_scrollbar_init(void *memory,const void *args){
 
     mgl_widget_init(&sb->base,&vtable,NULL,NULL,MGL_WIDGET_TYPE_SCROLLBAR);
 
-    MGL_WIDGET_FIELD_DEFAULT_VALUE(sb,sa,bar_w,MGL_SCROLLBAR_DEFAULT_BAR_W);
+    MGL_WIDGET_FIELD_HANDLE_DEFAULT(sb,sa,bar_w,MGL_SCROLLBAR_DEFAULT_BAR_W);
     sb->dragging=false;
     sb->on_scroll=sa->on_scroll;
     sb->callback_data=sa->callback_data;
 
-    MGL_WIDGET_BASE_FIELD_HANDLE(sb, sa);
-    MGL_WIDGET_PAINTER_FIELD_HANDLE_NAME(sb, sa, track);
-    MGL_WIDGET_PAINTER_FIELD_HANDLE_NAME(sb, sa, thumb);
+    MGL_WIDGET_BASE_FIELD_HANDLE(sb,sa);
+    MGL_WIDGET_PAINTER_FIELD_HANDLE_NAME_DEFAULT(sb,sa,track,MGL_THEME_TRACK());
+    MGL_WIDGET_PAINTER_FIELD_HANDLE_NAME_DEFAULT(sb,sa,thumb,MGL_THEME_BG());
 
     return &sb->base;
 }

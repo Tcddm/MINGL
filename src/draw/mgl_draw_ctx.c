@@ -26,6 +26,9 @@ void mgl_ctx_fill_rect(mgl_draw_ctx_t *ctx,mgl_coord_t x,mgl_coord_t y,mgl_coord
     mgl_rect_t rect={x,y,w,h};
     mgl_rect_t draw_area;
     if (mgl_rect_intersect(&rect,&ctx->clip,&draw_area)){
+        if(painter->type==MGL_PAINTER_TYPE_THEMED){
+            painter=mgl_theme_resolve(painter->theme_slot);
+        }
         if(painter->type==MGL_PAINTER_TYPE_SOLID){
             mgl_hal_fill_rect(draw_area.x,draw_area.y,draw_area.w,draw_area.h,painter->solid_color);
         }else if(painter->type==MGL_PAINTER_TYPE_CUSTOM){

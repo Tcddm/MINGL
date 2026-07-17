@@ -7,6 +7,7 @@
 #include "core/mgl_static_assert.h"
 #include "core/mgl_math.h"
 #include "core/mgl_rect.h"
+#include "theme/mgl_theme.h"
 
 #ifdef __cplusplus
 extern "C"{
@@ -44,6 +45,9 @@ static inline void mgl_ctx_draw_pixel(mgl_draw_ctx_t *ctx,mgl_coord_t x,mgl_coor
     const mgl_rect_t *r=&ctx->clip;
     if (x>=r->x&&x<r->x+r->w&&
         y>=r->y&&y<r->y+r->h){
+        if(painter->type==MGL_PAINTER_TYPE_THEMED){
+            painter=mgl_theme_resolve(painter->theme_slot);
+        }
         if(painter->type==MGL_PAINTER_TYPE_SOLID){
             mgl_hal_set_pixel(x,y,painter->solid_color);
         }else if(painter->type==MGL_PAINTER_TYPE_CUSTOM){

@@ -51,7 +51,9 @@ export default defineConfig({
             items: [
               { text: '渲染器', link: '/subsystem/render' },
 			  { text: '事件系统', link: '/subsystem/event' },
-			  { text: '动作系统', link: '/subsystem/action' }
+			  { text: '动作系统', link: '/subsystem/action' },
+			  { text: '画笔系统', link: '/subsystem/painter' },
+			  { text: '主题系统', link: '/subsystem/theme' }
             ]
           },
           {

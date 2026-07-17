@@ -7,12 +7,13 @@
 extern "C"{
 #endif
 
-
+// #region MGL_SOLID_PAINTER_TEMP
 #define MGL_SOLID_PAINTER_TEMP(col) \
     (&(const mgl_painter_t){ \
         .type=MGL_PAINTER_TYPE_SOLID, \
         .solid_color=col \
     })
+// #endregion
 
 #ifdef __cplusplus
 }

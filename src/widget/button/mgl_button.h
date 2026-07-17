@@ -2,9 +2,9 @@
 #define MGL_BUTTON_H
 
 #include "widget/mgl_widget.h"
-#include "font/mgl_font.h"
-#include "draw/mgl_draw_ctx_round_rect.h"
+#include "widget/mgl_layout_utils.h"
 #include "draw/mgl_draw_ctx_text.h"
+#include "draw/mgl_draw_ctx_round_rect.h"
 #include "draw/mgl_draw_ctx_bitmap.h"
 
 #ifdef __cplusplus

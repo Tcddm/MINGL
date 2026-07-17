@@ -137,3 +137,24 @@ mgl_widget_t *mgl_page_find_widget_by_id(mgl_page_t *page,uint16_t id){
 mgl_widget_t *mgl_current_page_find_widget_by_id(uint16_t id){
     return mgl_widget_find_by_id(mgl_get_current_page()->root,id);
 }
+
+void mgl_current_page_redraw(void){
+    mgl_page_t *page=mgl_get_current_page();
+    if(!page||!page->root){ return;}
+    mgl_widget_t *stack[MGL_MAX_WIDGET_DEPTH];
+    int sp=0;
+    stack[sp++]=page->root;
+    while(sp>0){
+        mgl_widget_t *w=stack[--sp];
+        w->prev_bounds=(mgl_rect_t){0,0,0,0};
+        for(mgl_widget_t *c=w->first_child;c;c=c->next_sibling){
+            if(sp<MGL_MAX_WIDGET_DEPTH){
+                stack[sp++]=c;
+            }
+        }
+    }
+
+    page->root->layout_dirty=1;
+    mgl_page_mark_all_widget_dirty(page->root);
+    //mgl_hal_clear_screen();
+}

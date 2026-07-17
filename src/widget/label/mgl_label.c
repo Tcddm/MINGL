@@ -40,7 +40,7 @@ void *mgl_label_init(void *memory,const void *args){
     label->font=label_args->font;
 
     MGL_WIDGET_BASE_FIELD_HANDLE(label,label_args);
-    MGL_WIDGET_PAINTER_FIELD_HANDLE(label,label_args);
+    MGL_WIDGET_PAINTER_FIELD_HANDLE_DEFAULT(label,label_args,MGL_THEME_FG());
 
     return &label->base;
 }

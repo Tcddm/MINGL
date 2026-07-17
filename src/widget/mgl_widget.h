@@ -46,13 +46,23 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_type_t acti
         custom_widget->name=custom_widget_args->name; \
     }while(0)
 
+#define MGL_WIDGET_FIELD_HANDLE_DEFAULT(custom_widget,custom_widget_args, \
+                                        field_name,default_value)        \
+    do{ \
+        if(!custom_widget_args->field_name){ \
+              custom_widget->field_name=default_value; \
+        }else{ \
+              custom_widget->field_name=custom_widget_args->field_name; \
+        } \
+    }while(0)
+
 #define MGL_WIDGET_ROUND_RADIUS_FIELD \
     mgl_coord_t round_radius;
 
 #define MGL_WIDGET_ROUND_RADIUS_FIELD_HANDLE(custom_widget,custom_widget_args) \
-    MGL_WIDGET_FIELD_HANDLE(custom_widget,custom_widget_args,round_radius)
+    MGL_WIDGET_FIELD_HANDLE_DEFAULT(custom_widget,custom_widget_args,round_radius,g_mgl_theme->round_radius)
 
-#define MGL_MEASURE_RESOLVE(pref_size, natural_size, constraint, out_size) \
+#define MGL_MEASURE_RESOLVE(pref_size,natural_size,constraint,out_size) \
     do { \
         mgl_coord_t __base; \
         if((pref_size)!=-1){ \
@@ -73,15 +83,6 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_type_t acti
         } \
     }while(0)
 
-#define MGL_WIDGET_FIELD_DEFAULT_VALUE(custom_widget,custom_widget_args, \
-                                        field_name,default_value)        \
-    do{ \
-        if(!custom_widget_args->field_name){ \
-              custom_widget->field_name=default_value; \
-        }else{ \
-              custom_widget->field_name=custom_widget_args->field_name; \
-        } \
-    }while(0)
 
 #define MGL_COMPONENT(name, ...) \
     static const mgl_widget_blueprint_t *name = __VA_ARGS__

@@ -1,11 +1,9 @@
 #include "mgl_button.h"
-#include "widget/mgl_layout_utils.h"
-
 
 static void draw(mgl_draw_ctx_t *ctx){
     mgl_widget_t *self=ctx->widget;
     mgl_button_t *button=container_of(self,mgl_button_t,base);
-    mgl_painter_t bg=button->background;
+    mgl_painter_t bg=mgl_theme_painter_resolve(&button->background);
     if(button->state==MGL_BUTTON_STATE_PRESSED){
         bg.solid_color.value=(bg.solid_color.value>>1)&0x7BEF;
     }
@@ -134,8 +132,7 @@ void *mgl_button_init(void *memory,const void *args){
 
     MGL_WIDGET_BASE_FIELD_HANDLE(button,button_args);
     MGL_WIDGET_ROUND_RADIUS_FIELD_HANDLE(button,button_args);
-    MGL_WIDGET_PAINTER_FIELD_HANDLE_NAME(button,button_args,foreground);
-    MGL_WIDGET_PAINTER_FIELD_HANDLE_NAME(button,button_args,background);
-
+    MGL_WIDGET_PAINTER_FIELD_HANDLE_NAME_DEFAULT(button,button_args,foreground,MGL_THEME_FG());
+    MGL_WIDGET_PAINTER_FIELD_HANDLE_NAME_DEFAULT(button,button_args,background,MGL_THEME_ACCENT());
     return &button->base;
 }

@@ -277,7 +277,7 @@ void *mgl_list_init(void *memory,const void *args){
     list->item_blueprint=la->item_blueprint;
 
     MGL_WIDGET_BASE_FIELD_HANDLE(list,la);
-    MGL_WIDGET_PAINTER_FIELD_HANDLE(list,la);
+    MGL_WIDGET_PAINTER_FIELD_HANDLE_DEFAULT(list,la,MGL_THEME_BG());
     MGL_WIDGET_ROUND_RADIUS_FIELD_HANDLE(list,la);
 
     //item_count

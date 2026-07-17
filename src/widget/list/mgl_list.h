@@ -1,7 +1,6 @@
 #ifndef MGL_LIST_H
 #define MGL_LIST_H
 
-#include "widget/mgl_widget.h"
 #include "widget/scrollbar/mgl_scrollbar.h"
 #include "widget/mgl_widget_blueprint.h"
 
