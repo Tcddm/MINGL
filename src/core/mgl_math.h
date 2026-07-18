@@ -8,7 +8,9 @@
 extern "C"{
 #endif
 
+// #region MGL_ABS_I16
 #define MGL_ABS_I16(n) ((n)>=0?(n):(int16_t)(-(int32_t)(n)))
+// #endregion
 
 //请注意！表格90度因为32768，因为int16所以改为32767，精度损失极低
 static const uint16_t sin_table_90[] = {
@@ -20,16 +22,21 @@ static const uint16_t sin_table_90[] = {
         32270, 32365, 32449, 32524, 32588, 32643, 32688, 32723, 32748, 32763, 32767
 };
 
+// #region mgl_sin_i16
 int16_t mgl_sin_i16(int16_t angle);
+// #endregion
 
 static inline int16_t mgl_cos_i16(int16_t angle) {
     return mgl_sin_i16((int16_t)(angle+90));
 }
 
+// #region mgl_sort
 void mgl_sort(int16_t * arr,int16_t n);
+// #endregion
 
+// #region binary_search
 void *binary_search(const void *base,size_t num,size_t size,const void *key,int (*cmp)(const void *,const void *));
-
+// #endregion
 #ifdef __cplusplus
 }
 #endif

@@ -6,7 +6,7 @@ static uint8_t page_pool[MGL_PAGE_POOL_SIZE];
 static uint8_t *pool_top=page_pool;
 
 #define ALIGN4(x)  (((x)+3)&~3)
-
+// #region mgl_page_pool_alloc
 void *mgl_page_pool_alloc(uint32_t size){
     uint32_t final_size= ALIGN4(size);
     uint8_t *result = pool_top;
@@ -25,6 +25,9 @@ void *mgl_page_pool_alloc(uint32_t size){
                 (uint32_t)(page_pool+MGL_PAGE_POOL_SIZE-pool_top));
     return result;
 }
+// #endregion
+
+// #region mgl_page_pool_free
 void mgl_page_pool_free(void *ptr){
     uint8_t *p=(uint8_t *)ptr;
     if(p>=page_pool&&p<pool_top){
@@ -40,12 +43,16 @@ void mgl_page_pool_free(void *ptr){
                       ptr,page_pool,pool_top);
     }
 }
+// #endregion
+
+// #region mgl_page_pool_reset
 void mgl_page_pool_reset(void){
     MGL_LOG_INFO(MGL_LOG_TAG_PAGE_POOL,"reset (was %u bytes used)",
                  (uint32_t)(pool_top-page_pool));
     memset(page_pool,0,pool_top-page_pool);
     pool_top=page_pool;
 }
+// #endregion
 uint8_t *mgl_page_pool_get_top(void){
     return pool_top;
 }

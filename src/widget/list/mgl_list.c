@@ -105,6 +105,8 @@ static void list_recycle(mgl_list_t *list){
         list->pool[found].list_index=i;
         list->adapter.bind(list->adapter.user_data,
                            list->pool[found].root,i);
+        //强制全量重绘
+        mgl_widget_mark_full_dirty(list->pool[found].root);
 
         //高度若未初始化则自动测量
         if(list->item_heights[i]==0){
@@ -143,7 +145,7 @@ static void list_recycle(mgl_list_t *list){
                     list->pool[found].root,
                     &list->pool[found].root->bounds);
         }
-        list->pool[found].root->visible = true;
+        list->pool[found].root->visible=true;
     }
 
     //释放仍高位标记的槽位
@@ -236,26 +238,45 @@ static void layout(mgl_widget_t *self,const mgl_rect_t *area){
     if(list->scrollbar.on_scroll){
         list->scrollbar.base.bounds=(mgl_rect_t){
                 (mgl_coord_t)(area->x+area->w-list->scrollbar.bar_w),
-                area->y,
-                list->scrollbar.bar_w,area->h
+                area->y,list->scrollbar.bar_w,area->h
         };
-        list->scrollbar.base.visible=
-                (list->content_height>area->h);
+        list->scrollbar.base.visible=(list->content_height>area->h);
     }
-    for(uint8_t i=0;i<list->pool_size;i++){
-        if(list->pool[i].list_index==MGL_LIST_INVALID_INDEX){
-            continue;
+
+    bool first_time=(list->pool==NULL);
+
+    if(first_time){
+        uint8_t needed=(uint8_t)((area->h+50-1)/50)+1;
+        if(needed<MGL_LIST_POOL_MIN_SIZE){
+            needed=MGL_LIST_POOL_MIN_SIZE;
         }
-        if(!list->pool[i].root||!list->pool[i].root->visible){
-            continue;
+
+        list->pool_size=needed;
+        list->pool=(mgl_list_slot_t *)mgl_page_pool_alloc(
+                sizeof(mgl_list_slot_t)*needed);
+        if(!list->pool){
+            list->pool_size=0;
+            return;
         }
-        int32_t slot_y=compute_cumulative_y(list,list->pool[i].list_index);
-        list->pool[i].root->bounds.x=area->x;
-        list->pool[i].root->bounds.y=
-                (mgl_coord_t)(area->y+slot_y-list->scroll_y);
-        list->pool[i].root->bounds.w=
-                (mgl_coord_t)(area->w-list->scrollbar.bar_w);
+        for(uint8_t s=0;s<needed;s++){
+            list->pool[s].root=mgl_blueprint_collect(
+                    list->item_blueprint,&list->base);
+            list->pool[s].list_index=MGL_LIST_INVALID_INDEX;
+        }
+        list_recycle(list);
+    }else{
+        for(uint8_t i=0;i<list->pool_size;i++){
+            if(list->pool[i].list_index==MGL_LIST_INVALID_INDEX){ continue;}
+            if(!list->pool[i].root || !list->pool[i].root->visible){ continue;}
+            int32_t slot_y=compute_cumulative_y(list,list->pool[i].list_index);
+            list->pool[i].root->bounds.x=area->x;
+            list->pool[i].root->bounds.y=
+                    (mgl_coord_t)(area->y+slot_y-list->scroll_y);
+            list->pool[i].root->bounds.w=
+                    (mgl_coord_t)(area->w-list->scrollbar.bar_w);
+        }
     }
+
     sync_scrollbar(list);
 }
 
@@ -300,45 +321,8 @@ void *mgl_list_init(void *memory,const void *args){
         list->content_height+=h;
     }
 
-    mgl_coord_t min_h=50;
-    for(uint16_t i=0;i<list->item_count&&i<5;i++){
-        if(list->item_heights[i]>0&&list->item_heights[i]<min_h){
-            min_h=list->item_heights[i];
-        }
-    }
-    mgl_coord_t view_h;
-    if(list->base.pref_h>0){
-        view_h=list->base.pref_h;
-    }else{
-        view_h=320;
-    }
-    uint8_t visible=(uint8_t)((view_h+min_h-1)/min_h);
-    if(visible<1){visible=1;}
-    list->pool_size=visible+1;
-    if(list->pool_size<MGL_LIST_POOL_MIN_SIZE){
-        list->pool_size=MGL_LIST_POOL_MIN_SIZE;
-    }
-
-    //分配池
-    list->pool=(mgl_list_slot_t *)mgl_page_pool_alloc(
-            sizeof(mgl_list_slot_t)*list->pool_size);
-    if(!list->pool){
-        list->pool_size=0;
-        goto init_scrollbar;
-    }
-
-    for(uint8_t s=0;s<list->pool_size;s++){
-        list->pool[s].root=mgl_blueprint_collect(
-                list->item_blueprint,&list->base);
-        if(!list->pool[s].root){
-            list->pool[s].list_index = MGL_LIST_INVALID_INDEX;
-            continue;
-        }
-        list->pool[s].root->visible=false;
-        list->pool[s].list_index=MGL_LIST_INVALID_INDEX;
-    }
-
-    list_recycle(list);
+    list->pool=NULL;
+    list->pool_size=0;
 
     init_scrollbar:
     //内嵌scrollbar

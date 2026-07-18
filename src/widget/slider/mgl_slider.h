@@ -15,10 +15,10 @@ extern "C"{
 #define MGL_SLIDER_DEFAULT_TRACK_H 4
 #endif
 #ifndef MGL_SLIDER_DEFAULT_THUMB_W
-#define MGL_SLIDER_DEFAULT_THUMB_W 16
+#define MGL_SLIDER_DEFAULT_THUMB_W 24
 #endif
 #ifndef MGL_SLIDER_DEFAULT_THUMB_H
-#define MGL_SLIDER_DEFAULT_THUMB_H 28
+#define MGL_SLIDER_DEFAULT_THUMB_H 24
 #endif
 
 void *mgl_slider_init(void *memory,const void *args);

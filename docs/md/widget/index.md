@@ -93,10 +93,10 @@ get_action|on_event调用后|将原始事件转为动作类型|
 |控件类型|控件|用途|
 |-|-|-|
 layout|[MGL_LINEAR_LAYOUT](./layout/linear_layout)|线性布局
-label|MGL_LABEL|显示文本
-button|MGL_BUTTON|按钮
-slider|MGL_SLIDER|滑块
-scrollbar|MGL_SCROLLBAR|滚动条
-list|MGL_LIST|列表
+label|[MGL_LABEL](./label/label.md)|显示文本
+button|[MGL_BUTTON](./button/button.md)|按钮
+slider|[MGL_SLIDER](./slider/slider.md)|滑块
+scrollbar|[MGL_SCROLLBAR](./scrollbar/scrollbar.md)|滚动条
+list|[MGL_LIST](./list/list.md)|列表
 
 这些内置控件和用户自定义控件使用的是同一套虚表机制。它们没有任何特权，只是框架提供给用户的参考实现。

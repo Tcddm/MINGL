@@ -17,10 +17,12 @@ export default defineConfig({
       "/": {
         base: "/",
         items: [
-		  {
+		{
             text: 'MINGL',
             collapsed: false,
             items: [
+              { text: '架构总览', link: '/core/architecture' },
+              { text: '核心工具 API', link: '/core/api' },
               { text: '类型表', link: '/core/types' }
             ]
           },
@@ -50,10 +52,13 @@ export default defineConfig({
             collapsed: false,
             items: [
               { text: '渲染器', link: '/subsystem/render' },
+			  { text: '页面内存池', link: '/subsystem/pool' },
 			  { text: '事件系统', link: '/subsystem/event' },
 			  { text: '动作系统', link: '/subsystem/action' },
+			  { text: '日志系统', link: '/subsystem/logger' },
 			  { text: '画笔系统', link: '/subsystem/painter' },
-			  { text: '主题系统', link: '/subsystem/theme' }
+			  { text: '主题系统', link: '/subsystem/theme' },
+			  { text: '字体系统', link: '/subsystem/font' }
             ]
           },
           {
@@ -66,9 +71,23 @@ export default defineConfig({
                 text: '内置控件',
                 collapsed: false,
                 items: [
-                  { text: 'MGL_LINEAR_LAYOUT', link: '/widget/layout/linear_layout' }
+                  { text: 'MGL_LINEAR_LAYOUT', link: '/widget/layout/linear_layout' },
+				  { text: 'MGL_LABEL', link: '/widget/label/label' },
+				  { text: 'MGL_BUTTON', link: '/widget/button/button' },
+				  { text: 'MGL_SLIDER', link: '/widget/slider/slider' },
+				  { text: 'MGL_SCROLLBAR', link: '/widget/scrollbar/scrollbar' },
+				  { text: 'MGL_LIST', link: '/widget/list/list' }
                 ]
               }
+            ]
+          },
+		  {
+            text: '工具',
+            collapsed: false,
+            items: [
+			  { text: '图形化配置', link: '/tools/kconfig' },
+              { text: '字体生成', link: '/tools/font_gen' }
+			  
             ]
           }
         ]

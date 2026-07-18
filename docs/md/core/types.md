@@ -15,6 +15,10 @@
 <<< @/../../src/core/mgl_types.h#mgl_event_t{c}
 ### mgl_action_type_t
 <<< @/../../src/core/mgl_types.h#mgl_action_type_t{c}
+### mgl_bitmap_format_t
+<<< @/../../src/core/mgl_types.h#mgl_bitmap_format_t{c}
+### mgl_bitmap_t
+<<< @/../../src/core/mgl_types.h#mgl_bitmap_t{c}
 ## /widget/mgl_widget.h
 ### mgl_action_handler_t
 <<< @/../../src/widget/mgl_widget.h#mgl_action_handler_t{c}
@@ -35,3 +39,14 @@
 <<< @/../../src/painter/mgl_painter.h#mgl_painter_vtable_t{c}
 ### mgl_painter_t
 <<< @/../../src/painter/mgl_painter.h#mgl_painter_t{c}
+## /font/mgl_font.h
+### mgl_glyph_t
+<<< @/../../src/font/mgl_font.h#mgl_glyph_t{c}
+### mgl_font_t
+<<< @/../../src/font/mgl_font.h#mgl_font_t{c}
+## /widget/scrollbar/mgl_scrollbar.h
+### mgl_scrollbar_callback_t
+<<< @/../../src/widget/scrollbar/mgl_scrollbar.h#mgl_scrollbar_callback_t{c}
+## /widget/list/mgl_list.h
+### mgl_list_adapter_t
+<<< @/../../src/widget/list/mgl_list.h#mgl_list_adapter_t{c}

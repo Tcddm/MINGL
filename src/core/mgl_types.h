@@ -9,8 +9,10 @@
 extern "C"{
 #endif
 
+// #region container_of
 #define container_of(ptr, type, member) \
     ((type *)((char *)(ptr) - offsetof(type, member)))
+// #endregion
 
 // #region mgl_coord_t
 typedef int16_t mgl_coord_t;
@@ -62,16 +64,20 @@ typedef struct{
     uint8_t alpha;
 } mgl_color_t;
 
+// #region mgl_bitmap_format_t
 typedef enum {
     MGL_BITMAP_FORMAT_RGB565=0
 } mgl_bitmap_format_t;
+// #endregion
 
+// #region mgl_bitmap_t
 typedef struct {
     const uint8_t *data;
     mgl_coord_t w;
     mgl_coord_t h;
     uint8_t format;
 } mgl_bitmap_t;
+// #endregion
 
 // #region mgl_margin_t
 /**

@@ -128,7 +128,6 @@ target_include_directories(mgl_core PUBLIC
 
 if(MGL_TOOL_ACCEL_FONT_GEN)
     target_include_directories(mgl_core PUBLIC ${CMAKE_SOURCE_DIR}/generated/font)
-    add_dependencies(mgl_core fonts)
 endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/platform/${MGL_PLATFORM}/CMakeLists.txt")
@@ -172,6 +171,10 @@ add_custom_target(menuconfig
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         USES_TERMINAL
 )
+add_custom_target(alldefconfig
+        COMMAND ${Python_EXECUTABLE} ${KCONFIG_PY} alldefconfig
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
 
 set(MGL_FONT_STAMP "${CMAKE_SOURCE_DIR}/generated/font/.stamp")
 
@@ -181,14 +184,20 @@ else()
     set(_SCAN_ARG "")
 endif()
 
+add_custom_target(fonts
+        COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/font_gen.py ${_SCAN_ARG}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tools
+        COMMENT "Generating font files from source code"
+)
+
 add_custom_command(
         OUTPUT ${MGL_FONT_STAMP}
         COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/font_gen.py ${_SCAN_ARG}
         COMMAND ${CMAKE_COMMAND} -E touch ${MGL_FONT_STAMP}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tools
-        DEPENDS
-        ${CMAKE_SOURCE_DIR}/tools/font_gen.py
-        COMMENT "Generating font files from source code"
+        DEPENDS ${CMAKE_SOURCE_DIR}/tools/font_gen.py ${CMAKE_SOURCE_DIR}/.config
+        COMMENT "Auto-generating font files (stamp)"
 )
+add_custom_target(fonts_auto DEPENDS ${MGL_FONT_STAMP})
 
-add_custom_target(fonts DEPENDS ${MGL_FONT_STAMP})
+add_dependencies(mgl_core fonts_auto)

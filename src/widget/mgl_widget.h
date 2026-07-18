@@ -180,6 +180,16 @@ static inline void mgl_widget_set_dirty_content(mgl_widget_t *w){
     mgl_widget_set_dirty(w);
 }
 
+/**
+ * @brief 标记控件需要全bounds重绘
+ *
+ * @param w 控件
+ */
+static inline void mgl_widget_mark_full_dirty(mgl_widget_t *w) {
+    w->prev_bounds=(mgl_rect_t){0,0,0,0};
+    mgl_widget_set_dirty(w);
+}
+
 #ifdef __cplusplus
 }
 #endif

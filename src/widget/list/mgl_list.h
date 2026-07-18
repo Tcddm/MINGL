@@ -13,6 +13,7 @@ extern "C"{
 #endif
 #define MGL_LIST_INVALID_INDEX 0xFFFF
 
+// #region mgl_list_adapter_t
 typedef struct{
     uint16_t (*get_count)(void *user_data);
     //>0=固定高度，0=自动测量
@@ -22,6 +23,7 @@ typedef struct{
                         uint16_t index);
     void *user_data;
 } mgl_list_adapter_t;
+// #endregion
 
 typedef struct{
     mgl_widget_t *root;
@@ -82,12 +84,38 @@ void *mgl_list_init(void *memory, const void *args);
 
 void mgl_list_set_scrollbar(mgl_list_t *list,mgl_scrollbar_t *sb);
 
-void mgl_list_notify_height_changed(mgl_list_t *list,uint16_t index,
-                                    int16_t new_h);
+
+/**
+ * @brief 滚动到指定行
+ *
+ * @param list 列表
+ * @param index 索引
+ */
 void mgl_list_scroll_to(mgl_list_t *list,uint16_t index);
+/**
+ * @brief 获取当前滚动位置
+ *
+ * @param list 列表
+ * @return 当前滚动位置
+ */
 int32_t mgl_list_get_scroll_position(const mgl_list_t *list);
+/**
+ * @brief 获取某行的控件树根（可直接修改内容）
+ *
+ * @param list 列表
+ * @param index 索引
+ * @return 树根控件指针
+ */
 mgl_widget_t *mgl_list_get_slot_root(const mgl_list_t *list,
                                      uint16_t index);
+/**
+ * @brief 某行高度变化时通知列表重建布局
+ * @param list 列表
+ * @param index 索引
+ * @param new_h 新高度
+ */
+void mgl_list_notify_height_changed(mgl_list_t *list,uint16_t index,
+                                    int16_t new_h);
 
 #ifdef __cplusplus
 }

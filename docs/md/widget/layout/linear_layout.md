@@ -13,7 +13,7 @@ main_align|[mgl_linear_align_t](/core/types#mgl_linear_align_t)|MGL_ALIGN_START|
 cross_align|[mgl_linear_align_t](/core/types#mgl_linear_align_t)|MGL_ALIGN_START|交叉轴对齐方式
 children|const [mgl_widget_blueprint_t](/core/types#mgl_widget_blueprint_t) **|NULL|子控件
 
-### 框架自带额外参数
+### 框架便捷宏参数
 参数|类型|默认值|说明
 -|-|-|-|
 painter|[mgl_painter_t](/core/types#mgl_painter_t)|EMPTY_PAINTER|背景

@@ -9,13 +9,15 @@ extern "C"{
 #endif
 
 #ifndef MGL_SCROLLBAR_DEFAULT_BAR_W
-#define MGL_SCROLLBAR_DEFAULT_BAR_W 4
+#define MGL_SCROLLBAR_DEFAULT_BAR_W 15
 #endif
 #ifndef MGL_SCROLLBAR_DEFAULT_THUMB_MIN_H
 #define MGL_SCROLLBAR_DEFAULT_THUMB_MIN_H 20
 #endif
 
+// #region mgl_scrollbar_callback_t
 typedef void (*mgl_scrollbar_callback_t)(int32_t position,void *user_data);
+// #endregion
 
 typedef struct{
     uint8_t bar_w;
@@ -43,15 +45,23 @@ typedef struct {
 
 void *mgl_scrollbar_init(void *memory,const void *args);
 
+/**
+ * @brief 设置内容总高度、可见区域高度和当前滚动位置
+ *
+ * @param sb 滚动条
+ * @param content_total 内容总高度
+ * @param viewport_h 可见区域高度
+ * @param position 当前滚动位置
+ */
 void mgl_scrollbar_set_content(mgl_scrollbar_t *sb,
                                int32_t content_total,int32_t viewport_h,
                                int32_t position);
 
 #define MGL_SCROLLBAR(...) \
     &((mgl_widget_blueprint_t){ \
-        .init = mgl_scrollbar_init, \
-        .size = sizeof(mgl_scrollbar_t), \
-        .args = &(mgl_scrollbar_args_t){ __VA_ARGS__ } \
+        .init=mgl_scrollbar_init, \
+        .size=sizeof(mgl_scrollbar_t), \
+        .args=&(mgl_scrollbar_args_t){ __VA_ARGS__ } \
     })
 
 #ifdef __cplusplus

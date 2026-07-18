@@ -1,3 +1,4 @@
+#include <string.h>
 #include "mgl_label.h"
 
 static void draw(mgl_draw_ctx_t *ctx) {

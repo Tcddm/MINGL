@@ -127,8 +127,8 @@ void *mgl_button_init(void *memory,const void *args){
     button->text=button_args->text;
     button->font=button_args->font;
     button->bmp=button_args->bmp;
-    button->spacing=button_args->spacing;
-    button->padding=button_args->padding;
+    MGL_WIDGET_FIELD_HANDLE_DEFAULT(button,button_args,spacing,MGL_BUTTON_DEFAULT_SPACING);
+    MGL_WIDGET_FIELD_HANDLE_DEFAULT(button,button_args,padding,MGL_BUTTON_DEFAULT_PADDING);
 
     MGL_WIDGET_BASE_FIELD_HANDLE(button,button_args);
     MGL_WIDGET_ROUND_RADIUS_FIELD_HANDLE(button,button_args);

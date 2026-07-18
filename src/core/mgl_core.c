@@ -3,7 +3,7 @@
 mgl_coord_t g_mgl_screen_height;
 mgl_coord_t g_mgl_screen_width;
 void mgl_core_init(void){
-    MGL_LOG_INFO(MGL_LOG_TAG_CORE,"MINGL %s start init (build %s %s)",MGL_VERSION_STRING,__DATE__,__TIME__);
+    MGL_LOG_INFO(MGL_LOG_TAG_CORE,"MINGL %s start init (built %s %s)",MGL_VERSION_STRING,__DATE__,__TIME__);
     mgl_core_set_screen_size(MGL_SCREEN_WIDTH,MGL_SCREEN_HEIGHT);
     MGL_LOG_INFO(MGL_LOG_TAG_CORE,"MINGL init done");
 }

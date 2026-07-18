@@ -31,6 +31,12 @@ typedef struct {
         .args=&(mgl_label_args_t){ __VA_ARGS__ } \
     })
 
+/**
+ * @brief 更新标签文本
+ *
+ * @param label 标签
+ * @param text 新文本（注意生命周期）
+ */
 void mgl_label_set_text(mgl_label_t *label,const char *text);
 
 #ifdef __cplusplus

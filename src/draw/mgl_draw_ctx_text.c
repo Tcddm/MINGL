@@ -123,10 +123,20 @@ void mgl_ctx_draw_text(mgl_draw_ctx_t *ctx,mgl_coord_t x,mgl_coord_t y,uint8_t f
                 mgl_glyph_cmp
         );
 
-        if (glyph!=NULL) {
+        if(glyph!=NULL){
             mgl_draw_glyph(ctx,current_x,y,flags,glyph,font,painter);
             current_x=(mgl_coord_t)(current_x+glyph->adv);
+        }else{
+            mgl_coord_t sz=font->font_size;
+            mgl_coord_t bx=current_x;
+            mgl_coord_t by=(mgl_coord_t)(y-font->baseline);
+            mgl_ctx_fill_rect(ctx,bx,by,
+                                  sz,
+                                  sz,
+                                  painter);
+            current_x=(mgl_coord_t)(current_x+sz+1);
         }
+
     }
 }
 
@@ -145,6 +155,8 @@ mgl_coord_t mgl_font_get_text_width(const mgl_font_t *font,const char *text){
         );
         if(glyph){
             width=(mgl_coord_t)(width+glyph->adv);
+        }else{
+            width=(mgl_coord_t)(width+font->font_size);
         }
     }
     return width;
