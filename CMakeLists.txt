@@ -97,6 +97,7 @@ set(MGL_CORE_SOURCES
         src/widget/scrollbar/mgl_scrollbar.c
         src/widget/list/mgl_list.c
         src/theme/mgl_theme.c
+        src/widget/switch/mgl_switch.c
 )
 
 file(STRINGS "${CMAKE_SOURCE_DIR}/.config" CONFIG_LINES)

@@ -10,6 +10,7 @@ extern "C"{
 
 void *mgl_label_init(void *memory,const void *args);
 
+// #region mgl_label
 typedef struct {
     char *text;
     const mgl_font_t *font;
@@ -23,6 +24,7 @@ typedef struct {
     const mgl_font_t *font;
     MGL_WIDGET_PAINTER_FIELD
 } mgl_label_t;
+// #endregion
 
 #define MGL_LABEL(...) \
     &((mgl_widget_blueprint_t){ \

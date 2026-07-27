@@ -67,6 +67,7 @@ export default defineConfig({
             items: [
               { text: '概述', link: '/widget' },
 			  { text: '页面定义指南', link: '/widget/define_page' },
+			  { text: '自定义控件指南', link: '/widget/custom' },
               {
                 text: '内置控件',
                 collapsed: false,
@@ -76,7 +77,8 @@ export default defineConfig({
 				  { text: 'MGL_BUTTON', link: '/widget/button/button' },
 				  { text: 'MGL_SLIDER', link: '/widget/slider/slider' },
 				  { text: 'MGL_SCROLLBAR', link: '/widget/scrollbar/scrollbar' },
-				  { text: 'MGL_LIST', link: '/widget/list/list' }
+				  { text: 'MGL_LIST', link: '/widget/list/list' },
+				  { text: 'MGL_SWITCH', link: '/widget/switch/switch' }
                 ]
               }
             ]

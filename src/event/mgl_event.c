@@ -53,8 +53,8 @@ static mgl_widget_t *get_deepest_hit_widget(mgl_widget_t *root,mgl_coord_t x,mgl
                     stack[stack_top++]=child;
                 }else{
                     MGL_LOG_ERROR(MGL_LOG_TAG_EVENT,
-                                  "hit-test stack overflow, child(%p) type=%d dropped",
-                                  (void*)child,child->type);
+                                  "hit-test stack overflow, child(%p) name=%s dropped",
+                                  (void*)child,MGL_WIDGET_NAME_FIELD_GET(child));
                 }
                 child=child->next_sibling;
             }
@@ -77,8 +77,8 @@ static bool event_bubble(mgl_widget_t *from,mgl_event_t *event){
         if(current->vtable&&current->vtable->on_event){
             consumed=current->vtable->on_event(current,event);
             MGL_LOG_DBG(MGL_LOG_TAG_EVENT,
-                        "bubble widget(%p) type=%d event=%d → %s",
-                        (void*)current,current->type,event->type,
+                        "bubble widget(%p) name=%s event=%d → %s",
+                        (void*)current,MGL_WIDGET_NAME_FIELD_GET(current),event->type,
                         consumed ? "CONSUMED" : "PASS");
         }
         mgl_action_type_t action;

@@ -54,11 +54,14 @@ void mgl_layout_linear_layout(mgl_layout_item_t *items,uint8_t count,
     mgl_coord_t remaining=(mgl_coord_t)(main_size-total_main);
 
     mgl_coord_t cursor=0;
+    mgl_coord_t gap=spacing;
     if(remaining>0){
         if(main_align==MGL_ALIGN_CENTER){
             cursor=(mgl_coord_t)(remaining/2);
         }else if(main_align==MGL_ALIGN_END) {
             cursor=remaining;
+        }else if(main_align==MGL_ALIGN_SPACE_BETWEEN&&count>1){
+            gap=(mgl_coord_t)(remaining/(count-1));
         }
     }
 
@@ -69,14 +72,14 @@ void mgl_layout_linear_layout(mgl_layout_item_t *items,uint8_t count,
             items[i].bounds.y=(mgl_coord_t)(start_y+offset);
             items[i].bounds.w=items[i].width;
             items[i].bounds.h=items[i].height;
-            cursor=(mgl_coord_t)(cursor+items[i].width+spacing);
+            cursor=(mgl_coord_t)(cursor+items[i].width+gap);
         }else{
             mgl_coord_t offset=mgl_layout_align_offset(cross_align,cross_size,items[i].width);
             items[i].bounds.x=(mgl_coord_t)(start_x+offset);
             items[i].bounds.y=(mgl_coord_t)(start_y+cursor);
             items[i].bounds.w=items[i].width;
             items[i].bounds.h=items[i].height;
-            cursor=(mgl_coord_t)(cursor+items[i].height+spacing);
+            cursor=(mgl_coord_t)(cursor+items[i].height+gap);
         }
     }
 }

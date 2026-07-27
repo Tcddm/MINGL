@@ -127,9 +127,9 @@ static const mgl_widget_vtable_t vtable={
 
 void *mgl_scrollbar_init(void *memory,const void *args){
     const mgl_scrollbar_args_t *sa=(const mgl_scrollbar_args_t *)args;
-    mgl_scrollbar_t *sb=(mgl_scrollbar_t *)memory;
+    mgl_scrollbar_t *sb= container_of(memory,mgl_scrollbar_t,base);
 
-    mgl_widget_init(&sb->base,&vtable,NULL,NULL,MGL_WIDGET_TYPE_SCROLLBAR);
+    mgl_widget_init(&sb->base,&vtable,"scrollbar",NULL);
 
     MGL_WIDGET_FIELD_HANDLE_DEFAULT(sb,sa,bar_w,MGL_SCROLLBAR_DEFAULT_BAR_W);
     sb->dragging=false;

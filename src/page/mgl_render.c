@@ -6,6 +6,22 @@ static uint32_t skip_frames=0;
 static uint32_t last_report=0;
 #endif
 /**
+ * @brief 将rect加入脏矩形数组，溢出时合并到最后一条
+ *
+ * @param count 当前已有条数
+ * @return 新条数
+ */
+static inline uint8_t render_add_dirty_rect(mgl_rect_t rects[],uint8_t count,
+                                            const mgl_rect_t *rect){
+    if(count<MGL_DIRTY_RECT_MAX_COUNT){
+        rects[count++]=*rect;
+    }else{
+        mgl_rect_union(&rects[MGL_DIRTY_RECT_MAX_COUNT-1],rect,
+                       &rects[MGL_DIRTY_RECT_MAX_COUNT-1]);
+    }
+    return count;
+}
+/**
  * @brief 迭代遍历脏但未移动的容器子树，收集所有真正产生像素变化的叶子控件或移动容器的 prev∪bounds 区域
  *
  * @param container 脏但未移动的容器
@@ -36,28 +52,18 @@ static uint8_t render_collect_sub_dirty(mgl_widget_t *container,
 
             if(!is_container||changed){
                 //叶子控件或自身移动过的容器直接收集
-                if(count<MGL_DIRTY_RECT_MAX_COUNT){
-                    mgl_rect_union(&c->prev_bounds,&c->bounds,&rects[count]);
-                    count++;
-                }else{
-                    mgl_rect_union(&rects[MGL_DIRTY_RECT_MAX_COUNT-1],
-                                   &c->prev_bounds,
-                                   &rects[MGL_DIRTY_RECT_MAX_COUNT-1]);
-                }
+                mgl_rect_t d;
+                mgl_rect_union(&c->prev_bounds,&c->bounds,&d);
+                count=render_add_dirty_rect(rects,count,&d);
             }else{
                 //脏但未移动的容器入栈，继续向下展开
                 if(sp<MGL_MAX_WIDGET_DEPTH){
                     stack[sp++]=c;
                 }else{
                     //栈深度耗尽退化为收集该容器的全区域
-                    if(count<MGL_DIRTY_RECT_MAX_COUNT){
-                        mgl_rect_union(&c->prev_bounds,&c->bounds,&rects[count]);
-                        count++;
-                    }else{
-                        mgl_rect_union(&rects[MGL_DIRTY_RECT_MAX_COUNT-1],
-                                       &c->prev_bounds,
-                                       &rects[MGL_DIRTY_RECT_MAX_COUNT-1]);
-                    }
+                    mgl_rect_t d;
+                    mgl_rect_union(&c->prev_bounds,&c->bounds,&d);
+                    count=render_add_dirty_rect(rects,count,&d);
                 }
             }
         }
@@ -85,20 +91,14 @@ static uint8_t render_gather_dirty_rects(mgl_widget_t *w,mgl_rect_t rects[]){
                                    c->prev_bounds.w!=c->bounds.w||
                                    c->prev_bounds.h!=c->bounds.h);
         bool child_is_container=(c->vtable->layout!=NULL);
-        if(child_is_container&&!child_self_changed){
+        if(child_is_container&&!child_self_changed&&!c->force_redraw){
             //容器仅因子控件冒泡变脏，展开子树取真实脏矩形
             count=render_collect_sub_dirty(c,rects,count);
         }else{
             //叶子控件或自身移动过的容器取其prev∪bounds
-            if(count<MGL_DIRTY_RECT_MAX_COUNT){
-                mgl_rect_union(&c->prev_bounds,&c->bounds,&rects[count]);
-                count++;
-            }else{
-                mgl_rect_t rect;
-                mgl_rect_union(&c->prev_bounds,&c->bounds,&rect);
-                mgl_rect_union(&rects[MGL_DIRTY_RECT_MAX_COUNT-1],&rect,
-                               &rects[MGL_DIRTY_RECT_MAX_COUNT-1]);
-            }
+            mgl_rect_t d;
+            mgl_rect_union(&c->prev_bounds,&c->bounds,&d);
+            count=render_add_dirty_rect(rects,count,&d);
         }
     }
 
@@ -111,7 +111,7 @@ static uint8_t render_gather_dirty_rects(mgl_widget_t *w,mgl_rect_t rects[]){
 
     bool include_self=w->dirty;
     if(has_layout){
-        include_self=w->dirty&&(self_changed||!had_dirty_child);
+        include_self=w->dirty&&(self_changed||!had_dirty_child||w->force_redraw);
     }
 
     if(include_self){
@@ -224,8 +224,12 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
 
         // #region mgl_render_widget_step5
         //子控件波及清空区（本层所有脏矩形绘制区域的合并结果）
-        mgl_rect_t next_clear=merged_clear;
-        bool next_has_clear=has_merged_clear;
+        mgl_rect_t next_clear;
+        bool next_has_clear=false;
+        if(has_merged_clear){
+            mgl_rect_intersect(&merged_clear,&w->bounds,&next_clear);
+            next_has_clear=true;
+        }
         // #endregion
 
         // #region mgl_render_widget_step6

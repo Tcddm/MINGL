@@ -21,23 +21,11 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_type_t acti
 
 #define MGL_WIDGET_BASE_FIELD_HANDLE(custom_widget,custom_widget_args) \
     do{ \
-        custom_widget->base.margin=custom_widget_args->margin;         \
-        if(custom_widget_args->pref_w==0){ \
-            custom_widget->base.pref_w=-1;                                                                         \
-        }else{ \
-            custom_widget->base.pref_w=custom_widget_args->pref_w;                                                                         \
-        } \
-        if(custom_widget_args->pref_h==0){ \
-            custom_widget->base.pref_h=-1;                                                                       \
-        }else{ \
-            custom_widget->base.pref_h=custom_widget_args->pref_h;                                                                   \
-        } \
-        if(custom_widget_args->id!=0){ \
-            custom_widget->base.id=custom_widget_args->id; \
-        } \
-        if(custom_widget_args->action_handler){ \
-            custom_widget->base.action_handler=custom_widget_args->action_handler; \
-        } \
+        custom_widget->base.margin=custom_widget_args->margin; \
+        custom_widget->base.pref_w=custom_widget_args->pref_w; \
+        custom_widget->base.pref_h=custom_widget_args->pref_h; \
+        custom_widget->base.id=custom_widget_args->id; \
+        custom_widget->base.action_handler=custom_widget_args->action_handler; \
     }while(0)
 
 
@@ -47,12 +35,12 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_type_t acti
     }while(0)
 
 #define MGL_WIDGET_FIELD_HANDLE_DEFAULT(custom_widget,custom_widget_args, \
-                                        field_name,default_value)        \
+                                        name,def)        \
     do{ \
-        if(!custom_widget_args->field_name){ \
-              custom_widget->field_name=default_value; \
+        if(!custom_widget_args->name){ \
+              custom_widget->name=def; \
         }else{ \
-              custom_widget->field_name=custom_widget_args->field_name; \
+              custom_widget->name=custom_widget_args->name; \
         } \
     }while(0)
 
@@ -65,10 +53,10 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_type_t acti
 #define MGL_MEASURE_RESOLVE(pref_size,natural_size,constraint,out_size) \
     do { \
         mgl_coord_t __base; \
-        if((pref_size)!=-1){ \
-            __base=(pref_size); \
-        }else{ \
+        if((pref_size)==0||(pref_size)==-1){ \
             __base=(natural_size); \
+        }else{ \
+            __base=(pref_size); \
         } \
         if((constraint).mode==MGL_MEASURE_EXACT) { \
             *(out_size)=(constraint).value; \
@@ -87,6 +75,13 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_type_t acti
 #define MGL_COMPONENT(name, ...) \
     static const mgl_widget_blueprint_t *name = __VA_ARGS__
 
+#if MGL_WIDGET_NAME_FIELD_ENABLE
+#define MGL_WIDGET_NAME_FIELD_GET(widget) \
+    widget->name ? widget->name : "?"
+#else
+#define MGL_WIDGET_NAME_FIELD_GET(widget) "?"
+#endif
+
 typedef enum{
     MGL_MEASURE_EXACT,
     MGL_MEASURE_AT_MOST,
@@ -97,7 +92,7 @@ typedef struct {
     mgl_coord_t value;
     uint8_t mode;
 } mgl_measure_constraint_t;
-
+// #region mgl_widget_vtable_t
 typedef struct {
     void (*draw)(mgl_draw_ctx_t *ctx);
     bool (*on_event)(mgl_widget_t *self,const mgl_event_t *event);
@@ -110,11 +105,12 @@ typedef struct {
                    const mgl_rect_t *area);
     mgl_action_type_t (*get_action)(mgl_widget_t *self,const mgl_event_t *event);
 } mgl_widget_vtable_t;
+// #endregion
 
+// #region mgl_widget_t
 struct mgl_widget_t{
     const mgl_widget_vtable_t *vtable;
     uint16_t id;
-    uint16_t type;
 
     mgl_rect_t bounds;
     mgl_rect_t prev_bounds;
@@ -131,37 +127,35 @@ struct mgl_widget_t{
 
     uint8_t dirty:1;
     uint8_t layout_dirty:1;
+    uint8_t force_redraw:1;
     uint8_t visible:1;
     uint8_t enabled:1;
     uint8_t focused:1;
-    uint8_t reserved:3;
+    uint8_t reserved:2;
 
-    int8_t  anim_slot;
+    uint8_t  anim_slot;
 
     void *user_data;
+#if MGL_WIDGET_NAME_FIELD_ENABLE
     const char *name;
+#endif
 
 };
+// #endregion
 
-typedef enum{
-    MGL_WIDGET_TYPE_LINEAR_LAYOUT=0,
-    MGL_WIDGET_TYPE_LABEL,
-    MGL_WIDGET_TYPE_BUTTON,
-    MGL_WIDGET_TYPE_SLIDER,
-    MGL_WIDGET_TYPE_SCROLLBAR,
-    MGL_WIDGET_TYPE_LIST
-} mgl_widget_type;
-
-void mgl_widget_init(mgl_widget_t *widget,const mgl_widget_vtable_t *vtable,const char *name,void *user_data,uint16_t type);
+void mgl_widget_init(mgl_widget_t *widget,const mgl_widget_vtable_t *vtable,const char *name,void *user_data);
 void mgl_widget_add_child(mgl_widget_t *parent,mgl_widget_t *child);
 
+// #region mgl_widget_set_dirty
 static inline void mgl_widget_set_dirty(mgl_widget_t *w) {
     while(w){
         w->dirty=1;
         w=w->parent;
     }
 }
+// #endregion
 
+// #region mgl_widget_set_dirty_content
 static inline void mgl_widget_set_dirty_content(mgl_widget_t *w){
     if(w->vtable->measure&&w->parent&&w->parent->vtable->layout){
         mgl_coord_t nw,nh;
@@ -179,16 +173,20 @@ static inline void mgl_widget_set_dirty_content(mgl_widget_t *w){
     }
     mgl_widget_set_dirty(w);
 }
+// #endregion
 
+// #region mgl_widget_mark_full_dirty
 /**
  * @brief 标记控件需要全bounds重绘
  *
  * @param w 控件
  */
 static inline void mgl_widget_mark_full_dirty(mgl_widget_t *w) {
-    w->prev_bounds=(mgl_rect_t){0,0,0,0};
+    w->force_redraw=1;
+    w->prev_bounds=w->bounds;
     mgl_widget_set_dirty(w);
 }
+// #endregion
 
 #ifdef __cplusplus
 }

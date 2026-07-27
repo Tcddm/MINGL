@@ -5,13 +5,13 @@
 <!--@include: @/snippets/widget_base_args.md-->
 ### 控件独有参数
 参数|类型|默认值|说明
--|-|-|-|
+-|-|-|-
 text|const char *|NULL|显示的文本（注意生命周期）
 font|const [mgl_font_t](/core/types.md#mgl_font_t) *|NULL|字体
 ### 框架便捷宏参数
 参数|类型|默认值|说明
--|-|-|-|
-painter|[mgl_painter_t](/core/types#mgl_painter_t)|主题前景色|文本颜色
+-|-|-|-
+painter|[mgl_painter_t](/core/types#mgl_painter_t)|主题前景画笔|文本画笔
 
 ## API
 ### 更新文本

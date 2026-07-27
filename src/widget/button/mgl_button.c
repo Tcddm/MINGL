@@ -1,5 +1,4 @@
 #include "mgl_button.h"
-
 static void draw(mgl_draw_ctx_t *ctx){
     mgl_widget_t *self=ctx->widget;
     mgl_button_t *button=container_of(self,mgl_button_t,base);
@@ -49,7 +48,7 @@ static void draw(mgl_draw_ctx_t *ctx){
         idx++;
     }
 
-    if (button->text&&button->font) {
+    if(button->text&&button->font){
         mgl_coord_t baseline_y=(mgl_coord_t)(items[idx].bounds.y+button->font->baseline);
         mgl_ctx_draw_text(ctx,items[idx].bounds.x,baseline_y,0,
                           button->text,button->font,&button->foreground);
@@ -119,9 +118,9 @@ static const mgl_widget_vtable_t vtable={
 };
 void *mgl_button_init(void *memory,const void *args){
     const mgl_button_args_t *button_args=(const mgl_button_args_t *)args;
-    mgl_button_t *button=(mgl_button_t *)memory;
+    mgl_button_t *button= container_of(memory,mgl_button_t,base);
 
-    mgl_widget_init(&button->base,&vtable,NULL,NULL,MGL_WIDGET_TYPE_BUTTON);
+    mgl_widget_init(&button->base,&vtable,"button",NULL);
 
 
     button->text=button_args->text;

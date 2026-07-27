@@ -12,7 +12,7 @@ Scrollbar通常被控件内嵌。用户一般只需要在控件中通过`.scroll
 <!--@include: @/snippets/widget_base_args.md-->
 ### 控件独有参数
 参数|类型|默认值|说明
--|-|-|-|
+-|-|-|-
 bar_w|[mgl_coord_t](/core/types#mgl_coord_t)|MGL_SCROLLBAR_DEFAULT_BAR_W(4)|滚动条宽度
 on_scroll|[mgl_scrollbar_callback_t](/core/types.md#mgl_scrollbar_callback_t)|NULL|滚动回调
 callback_data|void *|NULL|回调透传数据
@@ -22,9 +22,9 @@ callback_data|void *|NULL|回调透传数据
 **回调透传数据**：这是一个用户自定义的上下文指针，框架不会修改它，只会在触发on_scroll时原样回传。用于在回调函数中获取外部业务对象、控件实例或状态变量，避免使用全局变量。
 ### 框架便捷宏参数
 参数|类型|默认值|说明
--|-|-|-|
-track|[mgl_painter_t](/core/types#mgl_painter_t)|主题轨道色|轨道背景
-thumb|[mgl_painter_t](/core/types#mgl_painter_t)|主题背景色|滑块
+-|-|-|-
+track|[mgl_painter_t](/core/types#mgl_painter_t)|主题轨道画笔|轨道画笔
+thumb|[mgl_painter_t](/core/types#mgl_painter_t)|主题背景画笔|滑块画笔
 
 ## API
 ```c

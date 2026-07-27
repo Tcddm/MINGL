@@ -17,14 +17,14 @@ Adapter在列表首次填充或回收池重新分配slot时被调用。`slot_roo
 <!--@include: @/snippets/widget_base_args.md-->
 ### 控件独有参数
 参数|类型|默认值|说明
--|-|-|-|
+-|-|-|-
 adapter|const [mgl_list_adapter_t](/core/types)|NULL|数据源
 item_blueprint|const [mgl_widget_blueprint_t](/core/types#mgl_widget_blueprint_t)|NULL|列表项模版
 scrollbar_args|[mgl_scrollbar_args_t](/widget/scrollbar/scrollbar#控件独有参数)|—|内嵌滚动条的配置
 ### 框架便捷宏参数
 参数|类型|默认值|说明
--|-|-|-|
-painter|[mgl_painter_t](/core/types#mgl_painter_t)|主题背景色|列表背景
+-|-|-|-
+painter|[mgl_painter_t](/core/types#mgl_painter_t)|主题背景画笔|列表背景画笔
 <!--@include: @/snippets/widget_round_radius_args.md-->
 
 ## API

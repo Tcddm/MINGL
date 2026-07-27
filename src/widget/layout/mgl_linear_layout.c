@@ -58,7 +58,7 @@ static void linear_layout_measure(mgl_widget_t *self,
         }
 
         bool is_fill=(layout->direction==MGL_LINEAR_HORIZONTAL)
-                       ? (child->pref_w==-2) : (child->pref_h==-2);
+                       ? (child->pref_w==-1) : (child->pref_h==-1);
 
         if(is_fill){
             fill_child=child;
@@ -76,8 +76,8 @@ static void linear_layout_measure(mgl_widget_t *self,
                                                      :MGL_MEASURE_AT_MOST;
 
             child_ch.value=max_content_h;
-            child_ch.mode=(ch.mode==MGL_MEASURE_NONE)?MGL_MEASURE_NONE
-                                                     :MGL_MEASURE_AT_MOST;
+            child_ch.mode=(child->pref_h==-1)?MGL_MEASURE_EXACT:
+                          (ch.mode==MGL_MEASURE_NONE)?MGL_MEASURE_NONE:MGL_MEASURE_AT_MOST;
         }else{
 
             child_ch.value=(mgl_coord_t)(max_content_h-total_h);
@@ -85,8 +85,8 @@ static void linear_layout_measure(mgl_widget_t *self,
                                                      :MGL_MEASURE_AT_MOST;
 
             child_cw.value=max_content_w;
-            child_cw.mode=(cw.mode==MGL_MEASURE_NONE)?MGL_MEASURE_NONE
-                                                     :MGL_MEASURE_AT_MOST;
+            child_cw.mode=(child->pref_w==-1)?MGL_MEASURE_EXACT:
+                          (cw.mode==MGL_MEASURE_NONE)?MGL_MEASURE_NONE:MGL_MEASURE_AT_MOST;
         }
 
         child->vtable->measure(child,child_cw,child_ch,&child_w,&child_h);
@@ -115,12 +115,12 @@ static void linear_layout_measure(mgl_widget_t *self,
             f_cw.value=(mgl_coord_t)(max_content_w-total_w);
             f_cw.mode=(cw.mode==MGL_MEASURE_NONE) ? MGL_MEASURE_NONE : MGL_MEASURE_EXACT;
             f_ch.value=max_content_h;
-            f_ch.mode=(fill_child->pref_h==-2) ? MGL_MEASURE_EXACT : MGL_MEASURE_AT_MOST;
+            f_ch.mode=(fill_child->pref_h==-1) ? MGL_MEASURE_EXACT : MGL_MEASURE_AT_MOST;
         }else{
             f_ch.value=(mgl_coord_t)(max_content_h-total_h);
             f_ch.mode=(ch.mode==MGL_MEASURE_NONE) ? MGL_MEASURE_NONE : MGL_MEASURE_EXACT;
             f_cw.value=max_content_w;
-            f_cw.mode=(fill_child->pref_w==-2) ? MGL_MEASURE_EXACT : MGL_MEASURE_AT_MOST;
+            f_cw.mode=(fill_child->pref_w==-1) ? MGL_MEASURE_EXACT : MGL_MEASURE_AT_MOST;
         }
 
         mgl_coord_t f_w,f_h;
@@ -170,24 +170,26 @@ static void linear_layout_layout(mgl_widget_t *self, const mgl_rect_t *area) {
     mgl_coord_t content_h=(mgl_coord_t)(area->h-layout->padding_margin.top-layout->padding_margin.bottom);
 
     mgl_coord_t total_main=0;
+    uint8_t fixed_count=0;
     mgl_widget_t *tmp=self->first_child;
     while(tmp){
         if(tmp->vtable->measure){
             bool is_fill=(layout->direction==MGL_LINEAR_HORIZONTAL)
-                           ? (tmp->pref_w==-2) : (tmp->pref_h==-2);
+                           ? (tmp->pref_w==-1) : (tmp->pref_h==-1);
             if(is_fill){
                 tmp=tmp->next_sibling;
                 continue;
             }
+            fixed_count++;
             mgl_coord_t cw,ch;
             tmp->vtable->measure(tmp,
                                  (mgl_measure_constraint_t){32767, MGL_MEASURE_NONE},
                                  (mgl_measure_constraint_t){32767, MGL_MEASURE_NONE},
                                  &cw,&ch);
             mgl_margin_t *m=&tmp->margin;
-            if(layout->direction==MGL_LINEAR_HORIZONTAL) {
+            if(layout->direction==MGL_LINEAR_HORIZONTAL){
                 total_main=(mgl_coord_t)(total_main+m->left+cw+m->right);
-            } else {
+            }else{
                 total_main=(mgl_coord_t)(total_main+m->top+ch+m->bottom);
             }
         }
@@ -200,9 +202,21 @@ static void linear_layout_layout(mgl_widget_t *self, const mgl_rect_t *area) {
     }else{
         main_size=content_h;
     }
-    mgl_coord_t start_offset=mgl_layout_align_offset(layout->main_align,
-                                                     main_size,
-                                                     total_main);
+    mgl_coord_t start_offset;
+    if(layout->main_align==MGL_ALIGN_SPACE_BETWEEN){
+        start_offset=mgl_layout_align_offset(
+                MGL_ALIGN_START,
+                main_size,total_main);
+    }else{
+        start_offset=mgl_layout_align_offset(layout->main_align,
+                main_size,total_main);
+    }
+
+    mgl_coord_t gap=0;
+    if(layout->main_align==MGL_ALIGN_SPACE_BETWEEN&&fixed_count>1){
+        mgl_coord_t remaining=(mgl_coord_t)(main_size-total_main);
+        gap=(mgl_coord_t)(remaining/(fixed_count-1));
+    }
 
     MGL_LOG_DBG(LOG_TAG,"layout start (%p): area=(%d,%d,%d,%d) content=(%d,%d,%d,%d) start_offset=%d",
                 layout,area->x,area->y,area->w,area->h,content_x,content_y,content_w,content_h,start_offset);
@@ -219,7 +233,7 @@ static void linear_layout_layout(mgl_widget_t *self, const mgl_rect_t *area) {
         }
 
         bool is_fill=(layout->direction==MGL_LINEAR_HORIZONTAL)
-                       ? (child->pref_w==-2) : (child->pref_h==-2);
+                       ? (child->pref_w==-1) : (child->pref_h==-1);
 
         if(is_fill){
             fill_child=child;
@@ -232,10 +246,10 @@ static void linear_layout_layout(mgl_widget_t *self, const mgl_rect_t *area) {
             child_cw.value=(mgl_coord_t)(content_w-cursor);
             child_cw.mode=MGL_MEASURE_AT_MOST;
             child_ch.value=content_h;
-            child_ch.mode=MGL_MEASURE_AT_MOST;
+            child_ch.mode=(child->pref_h==-1)?MGL_MEASURE_EXACT:MGL_MEASURE_AT_MOST;
         }else{
             child_cw.value=content_w;
-            child_cw.mode=MGL_MEASURE_AT_MOST;
+            child_cw.mode=(child->pref_w==-1)?MGL_MEASURE_EXACT:MGL_MEASURE_AT_MOST;
             child_ch.value=(mgl_coord_t)(content_h-cursor);
             child_ch.mode=MGL_MEASURE_AT_MOST;
         }
@@ -254,7 +268,7 @@ static void linear_layout_layout(mgl_widget_t *self, const mgl_rect_t *area) {
             child_area.y=(mgl_coord_t)(content_y+offset);
             child_area.w=child_w;
             child_area.h=child_h;
-            cursor=(mgl_coord_t)(cursor+m->left+child_w+m->right);
+            cursor=(mgl_coord_t)(cursor+m->left+child_w+m->right+gap);
         }else{
             mgl_coord_t offset=mgl_layout_align_offset_with_margin(
                     layout->cross_align, content_w,child_w,m->left,m->right);
@@ -262,7 +276,7 @@ static void linear_layout_layout(mgl_widget_t *self, const mgl_rect_t *area) {
             child_area.y=(mgl_coord_t)(content_y+cursor+m->top);
             child_area.w=child_w;
             child_area.h=child_h;
-            cursor=(mgl_coord_t)(cursor+m->top+child_h+m->bottom);
+            cursor=(mgl_coord_t)(cursor+m->top+child_h+m->bottom+gap);
         }
 
         mgl_rect_t old_bounds=child->bounds;
@@ -299,12 +313,12 @@ static void linear_layout_layout(mgl_widget_t *self, const mgl_rect_t *area) {
             f_cw.value=(mgl_coord_t)(content_w-cursor);
             f_cw.mode=MGL_MEASURE_EXACT;
             f_ch.value=content_h;
-            f_ch.mode=(fill_child->pref_h==-2) ? MGL_MEASURE_EXACT : MGL_MEASURE_AT_MOST;
+            f_ch.mode=(fill_child->pref_h==-1) ? MGL_MEASURE_EXACT : MGL_MEASURE_AT_MOST;
         }else{
             f_ch.value=(mgl_coord_t)(content_h-cursor);
             f_ch.mode=MGL_MEASURE_EXACT;
             f_cw.value=content_w;
-            f_ch.mode=(fill_child->pref_h==-2) ? MGL_MEASURE_EXACT : MGL_MEASURE_AT_MOST;
+            f_cw.mode=(fill_child->pref_w==-1) ? MGL_MEASURE_EXACT : MGL_MEASURE_AT_MOST;
         }
 
         mgl_coord_t f_w,f_h;
@@ -360,9 +374,9 @@ static const mgl_widget_vtable_t vtable={
 
 void *mgl_linear_layout_init(void *memory,const void *args){
     const mgl_linear_layout_args_t *layout_args=(const mgl_linear_layout_args_t *)args;
-    mgl_linear_layout_t *layout=(mgl_linear_layout_t *)memory;
+    mgl_linear_layout_t *layout= container_of(memory,mgl_linear_layout_t,base);
 
-    mgl_widget_init(&layout->base,&vtable,NULL,NULL,MGL_WIDGET_TYPE_LINEAR_LAYOUT);
+    mgl_widget_init(&layout->base,&vtable,"linear_layout",NULL);
 
     layout->direction=layout_args->direction;
     layout->padding_margin=layout_args->padding_margin;

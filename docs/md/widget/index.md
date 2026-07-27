@@ -79,13 +79,7 @@ static uint8_t page_pool[MGL_PAGE_POOL_SIZE];
 因为页面是栈式的，所以MINGL的页面内存池也采用栈式内存池。页面加载时从池里顺序分配。页面回收时整块释放并把其所用的内存清零。没有空闲链表，没有碎片。
 
 ### 虚表
-|虚函数|调用时机|作用|
-|-|-|-|
-draw|[渲染器渲染步骤4](../subsystem/render#4.与裁剪区求交及绘制背景)|绘制自己
-measure|布局时|返回自然尺寸
-layout|布局时|排列子控件
-on_event|事件冒泡|事件处理|
-get_action|on_event调用后|将原始事件转为动作类型|
+<!--@include: @/snippets/widget_vtable.md-->
 
 控件内部通过container_of从基类指针恢复真实类型。编写自定义控件时开发者按需实现这些函数，其余由框架调度。
 
@@ -98,5 +92,6 @@ button|[MGL_BUTTON](./button/button.md)|按钮
 slider|[MGL_SLIDER](./slider/slider.md)|滑块
 scrollbar|[MGL_SCROLLBAR](./scrollbar/scrollbar.md)|滚动条
 list|[MGL_LIST](./list/list.md)|列表
+switch|[MGL_SWITCH](./switch/switch.md)|开关
 
 这些内置控件和用户自定义控件使用的是同一套虚表机制。它们没有任何特权，只是框架提供给用户的参考实现。

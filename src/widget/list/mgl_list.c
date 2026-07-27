@@ -289,10 +289,10 @@ static const mgl_widget_vtable_t vtable={
 
 void *mgl_list_init(void *memory,const void *args){
     const mgl_list_args_t *la=(const mgl_list_args_t *)args;
-    mgl_list_t *list=(mgl_list_t *)memory;
+    mgl_list_t *list= container_of(memory,mgl_list_t,base);
 
     mgl_widget_init(&list->base,&vtable,
-                    NULL,NULL,MGL_WIDGET_TYPE_LIST);
+                    "list",NULL);
 
     list->adapter=*la->adapter;
     list->item_blueprint=la->item_blueprint;

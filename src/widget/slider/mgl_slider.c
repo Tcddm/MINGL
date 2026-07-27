@@ -107,9 +107,9 @@ static const mgl_widget_vtable_t vtable={
 
 void *mgl_slider_init(void *memory,const void *args){
     const mgl_slider_args_t *sa=(const mgl_slider_args_t *)args;
-    mgl_slider_t *s=(mgl_slider_t *)memory;
+    mgl_slider_t *s= container_of(memory,mgl_slider_t,base);
 
-    mgl_widget_init(&s->base,&vtable,NULL,NULL,MGL_WIDGET_TYPE_SLIDER);
+    mgl_widget_init(&s->base,&vtable,"slider",NULL);
 
     s->value=sa->value;
     s->min=sa->min;

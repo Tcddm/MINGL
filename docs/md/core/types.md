@@ -20,6 +20,10 @@
 ### mgl_bitmap_t
 <<< @/../../src/core/mgl_types.h#mgl_bitmap_t{c}
 ## /widget/mgl_widget.h
+### mgl_widget_vtable_t
+<<< @/../../src/widget/mgl_widget.h#mgl_widget_vtable_t{c}
+### mgl_widget_t
+<<< @/../../src/widget/mgl_widget.h#mgl_widget_t{c}
 ### mgl_action_handler_t
 <<< @/../../src/widget/mgl_widget.h#mgl_action_handler_t{c}
 ## /widget/mgl_layout_utils.h

@@ -19,6 +19,7 @@ typedef enum {
     MGL_ALIGN_START=0,
     MGL_ALIGN_CENTER,
     MGL_ALIGN_END,
+    MGL_ALIGN_SPACE_BETWEEN,
 } mgl_linear_align_t;
 // #endregion
 

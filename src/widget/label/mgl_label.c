@@ -32,9 +32,9 @@ static const mgl_widget_vtable_t vtable={
 };
 void *mgl_label_init(void *memory,const void *args){
     const mgl_label_args_t *label_args=(const mgl_label_args_t *)args;
-    mgl_label_t *label=(mgl_label_t *)memory;
+    mgl_label_t *label=container_of(memory,mgl_label_t,base);
 
-    mgl_widget_init(&label->base,&vtable,NULL,NULL,MGL_WIDGET_TYPE_LABEL);
+    mgl_widget_init(&label->base,&vtable,"label",NULL);
 
 
     label->text=label_args->text;

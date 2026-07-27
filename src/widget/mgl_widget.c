@@ -1,7 +1,6 @@
 #include "mgl_widget.h"
-void mgl_widget_init(mgl_widget_t *widget,const mgl_widget_vtable_t *vtable,const char *name,void *user_data,uint16_t type){
+void mgl_widget_init(mgl_widget_t *widget,const mgl_widget_vtable_t *vtable,const char *name,void *user_data){
     widget->vtable=vtable;
-    widget->type=type;
     widget->id=0;
     
     widget->bounds=(mgl_rect_t){0, 0, 0, 0};
@@ -24,7 +23,11 @@ void mgl_widget_init(mgl_widget_t *widget,const mgl_widget_vtable_t *vtable,cons
     widget->anim_slot=-1;
 
     widget->user_data=user_data;
+#if MGL_WIDGET_NAME_FIELD_ENABLE
     widget->name=name;
+#else
+    (void)name;
+#endif
 
 
 

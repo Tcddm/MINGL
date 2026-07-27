@@ -90,9 +90,8 @@ void mgl_page_back(void){
     page_stack_top--;
     mgl_page_pool_free(old_page->pool_start);
     mgl_page_t *new_page=mgl_get_current_page();
-    mgl_page_mark_all_widget_dirty(new_page->root);
-    new_page->root->prev_bounds=(mgl_rect_t){0,0,0,0};
     mgl_hal_clear_screen();
+    mgl_current_page_redraw();
     MGL_LOG_INFO(MGL_LOG_TAG_PAGE,"back to %s page (destroyed %s page)",
                  new_page->desc->name,
                  old_name
@@ -153,8 +152,5 @@ void mgl_current_page_redraw(void){
             }
         }
     }
-
-    page->root->layout_dirty=1;
     mgl_page_mark_all_widget_dirty(page->root);
-    //mgl_hal_clear_screen();
 }
