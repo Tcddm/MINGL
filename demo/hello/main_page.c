@@ -12,6 +12,7 @@ MGL_ROOT(
                 .pref_h=g_mgl_screen_height,
                 .main_align=MGL_ALIGN_CENTER,
                 .cross_align=MGL_ALIGN_CENTER,
+                .round_radius=-1,
                 .painter= MGL_SOLID_PAINTER_TEMP(MGL_COLOR_BLUE),
                 .children=MGL_CHILDREN(
                         MGL_LABEL(

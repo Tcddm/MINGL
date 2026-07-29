@@ -7,8 +7,8 @@ hero:
   tagline: "面向MCU与低性能Linux的嵌入式UI框架"
   actions:
     - theme: brand
-      text: 进入
-      link: /hal
+      text: 快速开始
+      link: /quick/sdl
 
 features:
   - title: 声明式描述页面

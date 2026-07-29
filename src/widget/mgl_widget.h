@@ -48,7 +48,13 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_type_t acti
     mgl_coord_t round_radius;
 
 #define MGL_WIDGET_ROUND_RADIUS_FIELD_HANDLE(custom_widget,custom_widget_args) \
-    MGL_WIDGET_FIELD_HANDLE_DEFAULT(custom_widget,custom_widget_args,round_radius,g_mgl_theme->round_radius)
+    do{ \
+        if(custom_widget_args->round_radius==-1){ \
+            custom_widget->round_radius=0; \
+        }else{ \
+            MGL_WIDGET_FIELD_HANDLE_DEFAULT(custom_widget,custom_widget_args,round_radius,g_mgl_theme->round_radius); \
+        } \
+    }while(0)
 
 #define MGL_MEASURE_RESOLVE(pref_size,natural_size,constraint,out_size) \
     do { \

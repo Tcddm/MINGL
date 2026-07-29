@@ -18,6 +18,13 @@ export default defineConfig({
         base: "/",
         items: [
 		{
+            text: '快速开始',
+            collapsed: false,
+            items: [
+              { text: 'SDL模拟器', link: '/quick/sdl' },
+            ]
+        },
+		{
             text: 'MINGL',
             collapsed: false,
             items: [
