@@ -13,7 +13,7 @@ MGL_ROOT(
                 .main_align=MGL_ALIGN_CENTER,
                 .cross_align=MGL_ALIGN_CENTER,
                 .round_radius=-1,
-                .painter= MGL_SOLID_PAINTER_TEMP(MGL_COLOR_BLUE),
+                .painter=MGL_SOLID_PAINTER_TEMP(MGL_COLOR_BLUE),
                 .children=MGL_CHILDREN(
                         MGL_LABEL(
                             .painter=MGL_SOLID_PAINTER_TEMP(MGL_COLOR_BLACK),

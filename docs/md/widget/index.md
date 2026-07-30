@@ -10,8 +10,7 @@ lv_obj_set_pos(label,10,20);
 
 //MINGL——声明式：结构即结果，顺序无关
 MGL_LABEL(
-    .text=MGL_STR("Hello"),
-    .painter=MGL_SOLID_PAINTER_TEMP(MGL_COLOR_WHITE)
+    .text=MGL_STR("Hello")
 )
 ```
 命令式需要按顺序执行 create → set_text → set_pos。声明式中，所有属性在宏里一次性指定，A和B的位置在代码中就对应它们在界面上的层级关系。你看代码就知道界面的结构，不需要跟踪运行时状态。
