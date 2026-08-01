@@ -9,6 +9,8 @@ extern "C" {
 
 #include "mgl_config_gen.h"
 
+#define MGL_FRAMEBUFFER MGL_FRAMEBUFFER_INTERNAL || MGL_FRAMEBUFFER_EXTERNAL
+
 #ifdef __cplusplus
 }
 #endif

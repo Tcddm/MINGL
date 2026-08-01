@@ -11,8 +11,13 @@ menu "硬件加速特性"
 
 config MGL_HW_ACCEL_FILL_RECT
     bool "填充矩形"
+	depends on MGL_FRAMEBUFFER_NONE
 config MGL_HW_ACCEL_BIT_BLT
     bool "位图传输"
+	depends on MGL_FRAMEBUFFER_NONE
+config MGL_HW_ACCEL_ALPHA_BLEND
+    bool "alpha混合"
+	
 endmenu	
 	
 config MGL_SCREEN_WIDTH
@@ -21,6 +26,26 @@ config MGL_SCREEN_WIDTH
 config MGL_SCREEN_HEIGHT
     int "屏幕高度（px）"
     default 320
+
+menu "图形缓冲"
+
+choice
+    prompt "帧缓冲模式"
+    default MGL_FRAMEBUFFER_NONE
+
+config MGL_FRAMEBUFFER_NONE
+    bool "无缓冲（直接写屏）"
+
+config MGL_FRAMEBUFFER_INTERNAL
+    bool "内部缓冲（框架分配）"
+
+config MGL_FRAMEBUFFER_EXTERNAL
+    bool "外部缓冲（用户提供）"
+
+endchoice
+
+endmenu	
+	
 config MGL_PAGE_POOL_SIZE
     int "页面池大小（bytes）"
     default 2048

@@ -37,5 +37,5 @@ void mgl_ctx_draw_bitmap_part(mgl_draw_ctx_t *ctx,mgl_coord_t x,mgl_coord_t y,co
     //裁剪后宽高<=0直接不绘制
     MGL_GUARD_CHECK(final_src.w>0&&final_src.h>0);
 
-    mgl_hal_bit_blt(draw_area.x,draw_area.y,&final_src,bmp,transparent_color);
+    mgl_hal_bit_blt(draw_area.x,draw_area.y,&final_src,bmp,transparent_color.value);
 }

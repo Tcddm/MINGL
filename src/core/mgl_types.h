@@ -59,8 +59,10 @@ typedef struct{
     uint8_t count; // 当前有效点数
 } mgl_touch_data_t;
 
+typedef uint16_t mgl_color_value_t;
+
 typedef struct{
-    uint16_t value;
+    mgl_color_value_t value;
     uint8_t alpha;
 } mgl_color_t;
 

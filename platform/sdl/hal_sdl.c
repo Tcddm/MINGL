@@ -5,6 +5,10 @@ static SDL_Renderer *g_renderer=NULL;
 static uint32_t g_start_tick=0;
 static bool g_touch_pressed=false;
 static int16_t g_touch_x=0,g_touch_y=0;
+#if MGL_FRAMEBUFFER
+static SDL_Texture *g_texture=NULL;
+#include "hal/mgl_fb.h"
+#endif
 bool mgl_hal_sdl2_init(const char *title){
     if(SDL_Init(SDL_INIT_VIDEO)!=0){
         return false;
@@ -26,12 +30,22 @@ bool mgl_hal_sdl2_init(const char *title){
         SDL_Quit();
         return false;
     }
-
+#if MGL_FRAMEBUFFER
+    g_texture=SDL_CreateTexture(g_renderer,
+                                  SDL_PIXELFORMAT_RGB565,
+                                  SDL_TEXTUREACCESS_STREAMING,
+                                  g_mgl_screen_width,
+                                  g_mgl_screen_height);
+    if(!g_texture){return false;}
+#endif
     g_start_tick=SDL_GetTicks();
     return true;
 }
 
 void mgl_hal_sdl2_cleanup(void){
+#if MGL_FRAMEBUFFER
+    if(g_texture){SDL_DestroyTexture(g_texture);}
+#endif
     if(g_renderer){SDL_DestroyRenderer(g_renderer);}
     if(g_window){SDL_DestroyWindow(g_window);}
     SDL_Quit();
@@ -77,12 +91,63 @@ static inline void rgb565_to_rgba(SDL_Renderer *r,uint16_t c,uint8_t a){
     blue=(blue << 3) | (blue >> 2);
     SDL_SetRenderDrawColor(r,red,green,blue,255);
 }
-void mgl_hal_set_pixel(mgl_coord_t x,mgl_coord_t y,mgl_color_t color){
-    if(color.alpha<128){ return;}
-    rgb565_to_rgba(g_renderer,color.value,color.alpha);
+#if !MGL_FRAMEBUFFER
+void mgl_hal_set_pixel(mgl_coord_t x,mgl_coord_t y,mgl_color_value_t color){
+    rgb565_to_rgba(g_renderer,color,255);
     SDL_RenderDrawPoint(g_renderer,x,y);
 }
+void mgl_hal_fill_rect(mgl_coord_t x,mgl_coord_t y,mgl_coord_t w,mgl_coord_t h,mgl_color_value_t color){
+    rgb565_to_rgba(g_renderer,color,255);
+    SDL_Rect rect={x,y,w,h};
+    SDL_RenderFillRect(g_renderer,&rect);
+}
 
+void mgl_hal_clear_screen(void){
+    mgl_coord_t w=g_mgl_screen_width;
+    mgl_coord_t h=g_mgl_screen_height;
+    mgl_color_value_t a=0x0000;
+    mgl_hal_fill_rect(0,0,w,h,a);
+}
+void mgl_hal_bit_blt(mgl_coord_t x,mgl_coord_t y,
+                     const mgl_rect_t *src_rect,
+                     const mgl_bitmap_t *bmp,
+                     mgl_color_value_t transparent_color){
+    if(!g_renderer||!bmp||!bmp->data){return;}
+
+    SDL_Surface *surface=SDL_CreateRGBSurfaceWithFormat(
+            0,bmp->w,bmp->h,16,SDL_PIXELFORMAT_RGB565);
+
+    if(!surface){ return;}
+    size_t row_size=bmp->w*2;
+    for(int i=0;i<bmp->h;i++){
+        memcpy((uint8_t*)surface->pixels+i*surface->pitch,
+               bmp->data+i*row_size,row_size);
+    }
+
+    if(transparent_color!=0xFFFF){
+        uint8_t r=(transparent_color >> 11) & 0x1F;
+        uint8_t g=(transparent_color >> 5) & 0x3F;
+        uint8_t b=transparent_color & 0x1F;
+        uint32_t key=SDL_MapRGB(surface->format,r<<3,g<<2,b<<3);
+        SDL_SetColorKey(surface,SDL_TRUE,key);
+    }
+
+    SDL_Texture *texture=SDL_CreateTextureFromSurface(g_renderer,surface);
+    SDL_FreeSurface(surface);
+    if(!texture){ return;}
+
+    SDL_Rect src={0,0,bmp->w,bmp->h};
+    if(src_rect){
+        src.x=src_rect->x;
+        src.y=src_rect->y;
+        src.w=src_rect->w;
+        src.h=src_rect->h;
+    }
+    SDL_Rect dst={x,y,src.w,src.h};
+    SDL_RenderCopy(g_renderer,texture,&src,&dst);
+    SDL_DestroyTexture(texture);
+}
+#endif
 uint32_t mgl_hal_get_tick_ms(void){
     return SDL_GetTicks()-g_start_tick;
 }
@@ -101,58 +166,10 @@ bool mgl_hal_get_touch(mgl_touch_data_t *touch){
 }
 
 void mgl_hal_flush_display(void){
+#if MGL_FRAMEBUFFER
+    SDL_UpdateTexture(g_texture,NULL,mgl_hal_get_fb(),
+                      (int)(g_mgl_screen_width*sizeof(mgl_color_value_t)));
+    SDL_RenderCopy(g_renderer, g_texture, NULL, NULL);
+#endif
     SDL_RenderPresent(g_renderer);
-}
-
-void mgl_hal_fill_rect(mgl_coord_t x,mgl_coord_t y,mgl_coord_t w,mgl_coord_t h,mgl_color_t color){
-    if(color.alpha<128){ return;}
-    rgb565_to_rgba(g_renderer,color.value,color.alpha);
-    SDL_Rect rect={x,y,w,h};
-    SDL_RenderFillRect(g_renderer,&rect);
-}
-
-void mgl_hal_clear_screen(void){
-    mgl_coord_t w=g_mgl_screen_width;
-    mgl_coord_t h=g_mgl_screen_height;
-    mgl_color_t a={0x0000,255};
-    mgl_hal_fill_rect(0,0,w,h,a);
-}
-void mgl_hal_bit_blt(mgl_coord_t x,mgl_coord_t y,
-                     const mgl_rect_t *src_rect,
-                     const mgl_bitmap_t *bmp,
-                     mgl_color_t transparent_color){
-    if(!g_renderer||!bmp||!bmp->data){return;}
-
-    SDL_Surface *surface=SDL_CreateRGBSurfaceWithFormat(
-            0,bmp->w,bmp->h,16,SDL_PIXELFORMAT_RGB565);
-
-    if(!surface){ return;}
-    size_t row_size=bmp->w*2;
-    for(int i=0;i<bmp->h;i++){
-        memcpy((uint8_t*)surface->pixels+i*surface->pitch,
-               bmp->data+i*row_size,row_size);
-    }
-
-    if(transparent_color.alpha==0&&transparent_color.value!=0xFFFF){
-        uint8_t r=(transparent_color.value >> 11) & 0x1F;
-        uint8_t g=(transparent_color.value >> 5) & 0x3F;
-        uint8_t b=transparent_color.value & 0x1F;
-        uint32_t key=SDL_MapRGB(surface->format,r<<3,g<<2,b<<3);
-        SDL_SetColorKey(surface,SDL_TRUE,key);
-    }
-    
-    SDL_Texture *texture=SDL_CreateTextureFromSurface(g_renderer,surface);
-    SDL_FreeSurface(surface);
-    if(!texture){ return;}
-    
-    SDL_Rect src={0,0,bmp->w,bmp->h};
-    if(src_rect){
-        src.x=src_rect->x;
-        src.y=src_rect->y;
-        src.w=src_rect->w;
-        src.h=src_rect->h;
-    }
-    SDL_Rect dst={x,y,src.w,src.h};
-    SDL_RenderCopy(g_renderer,texture,&src,&dst);
-    SDL_DestroyTexture(texture);
 }

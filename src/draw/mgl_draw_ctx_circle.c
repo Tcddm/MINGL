@@ -24,14 +24,14 @@ static void mgl_ctx_draw_circle_1px(mgl_draw_ctx_t *ctx,mgl_coord_t cx,mgl_coord
     if(fully_inside&&painter->type==MGL_PAINTER_TYPE_SOLID){
         mgl_color_t color=painter->solid_color;
         while(x<=y){
-            mgl_hal_set_pixel((mgl_coord_t)(cx+x),(mgl_coord_t)(cy+y),color);
-            mgl_hal_set_pixel((mgl_coord_t)(cx+y),(mgl_coord_t)(cy+x),color);
-            mgl_hal_set_pixel((mgl_coord_t)(cx-x),(mgl_coord_t)(cy+y),color);
-            mgl_hal_set_pixel((mgl_coord_t)(cx-y),(mgl_coord_t)(cy+x),color);
-            mgl_hal_set_pixel((mgl_coord_t)(cx-x),(mgl_coord_t)(cy-y),color);
-            mgl_hal_set_pixel((mgl_coord_t)(cx-y),(mgl_coord_t)(cy-x),color);
-            mgl_hal_set_pixel((mgl_coord_t)(cx+x),(mgl_coord_t)(cy-y),color);
-            mgl_hal_set_pixel((mgl_coord_t)(cx+y),(mgl_coord_t)(cy-x),color);
+            mgl_hal_set_pixel_alpha((mgl_coord_t)(cx+x),(mgl_coord_t)(cy+y),color);
+            mgl_hal_set_pixel_alpha((mgl_coord_t)(cx+y),(mgl_coord_t)(cy+x),color);
+            mgl_hal_set_pixel_alpha((mgl_coord_t)(cx-x),(mgl_coord_t)(cy+y),color);
+            mgl_hal_set_pixel_alpha((mgl_coord_t)(cx-y),(mgl_coord_t)(cy+x),color);
+            mgl_hal_set_pixel_alpha((mgl_coord_t)(cx-x),(mgl_coord_t)(cy-y),color);
+            mgl_hal_set_pixel_alpha((mgl_coord_t)(cx-y),(mgl_coord_t)(cy-x),color);
+            mgl_hal_set_pixel_alpha((mgl_coord_t)(cx+x),(mgl_coord_t)(cy-y),color);
+            mgl_hal_set_pixel_alpha((mgl_coord_t)(cx+y),(mgl_coord_t)(cy-x),color);
             if(d<0){
                 d=d+4*x+6;
             }else{

@@ -1,6 +1,6 @@
 #include "mgl_hal.h"
-#if !MGL_HW_ACCEL_FILL_RECT
-void mgl_hal_fill_rect(mgl_coord_t x,mgl_coord_t y,mgl_coord_t w,mgl_coord_t h,mgl_color_t color){
+#if !MGL_HW_ACCEL_FILL_RECT && !MGL_FRAMEBUFFER
+void mgl_hal_fill_rect(mgl_coord_t x,mgl_coord_t y,mgl_coord_t w,mgl_coord_t h,mgl_color_value_t color){
     const mgl_coord_t x_end=(mgl_coord_t)(x+w);
     const mgl_coord_t y_end=(mgl_coord_t)(y+h);
 
@@ -12,8 +12,8 @@ void mgl_hal_fill_rect(mgl_coord_t x,mgl_coord_t y,mgl_coord_t w,mgl_coord_t h,m
 }
 #endif
 
-#if !MGL_HW_ACCEL_BIT_BLT
-void mgl_hal_bit_blt(mgl_coord_t x,mgl_coord_t y,const mgl_rect_t *src_rect,const mgl_bitmap_t *bmp,mgl_color_t transparent_color){
+#if !MGL_HW_ACCEL_BIT_BLT && !MGL_FRAMEBUFFER
+void mgl_hal_bit_blt(mgl_coord_t x,mgl_coord_t y,const mgl_rect_t *src_rect,const mgl_bitmap_t *bmp,mgl_color_value_t transparent_color){
     mgl_coord_t src_x,src_y;
     mgl_coord_t src_w,src_h,bmp_w;
     src_x=src_rect->x;
@@ -27,7 +27,7 @@ void mgl_hal_bit_blt(mgl_coord_t x,mgl_coord_t y,const mgl_rect_t *src_rect,cons
             for (mgl_coord_t dy=0;dy<src_h;dy++) {
                 for (mgl_coord_t dx=0;dx<src_w;dx++) {
                     uint32_t pixel_idx=(src_y+dy)*bmp_w+(src_x+dx);
-                    mgl_color_t color={.value=pixels[pixel_idx],.alpha=255};
+                    mgl_color_value_t color={.value=pixels[pixel_idx],.alpha=255};
                     if(color.value!=transparent_color.value){
                         mgl_hal_set_pixel((mgl_coord_t)(x+dx),(mgl_coord_t)(y+dy),color);
                     }
@@ -40,5 +40,16 @@ void mgl_hal_bit_blt(mgl_coord_t x,mgl_coord_t y,const mgl_rect_t *src_rect,cons
             return;
     }
 
+}
+#endif
+
+#if !MGL_HW_ACCEL_ALPHA_BLEND && !MGL_FRAMEBUFFER
+void mgl_hal_fill_rect_alpha(mgl_coord_t x,mgl_coord_t y,mgl_coord_t w,mgl_coord_t h,mgl_color_t color){
+    if(color.alpha<128){ return;}
+    mgl_hal_fill_rect(x,y,w,h,color.value);
+}
+void mgl_hal_bit_blt_alpha(mgl_coord_t x,mgl_coord_t y,const mgl_rect_t *src_rect,const mgl_bitmap_t *bmp,mgl_color_value_t transparent_color,uint8_t alpha){
+    if(alpha<128){ return;}
+    mgl_hal_bit_blt(x,y,src_rect,bmp,transparent_color);
 }
 #endif

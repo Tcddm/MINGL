@@ -19,7 +19,7 @@ extern "C"{
  * @param y Y坐标（从上到下，0 为最上）
  * @param color 像素颜色
  */
-void mgl_hal_set_pixel(mgl_coord_t x,mgl_coord_t y,mgl_color_t color);
+void mgl_hal_set_pixel(mgl_coord_t x,mgl_coord_t y,mgl_color_value_t color);
 // #endregion
 
 // #region mgl_hal_get_tick_ms
@@ -69,7 +69,7 @@ void mgl_hal_clear_screen(void);
  * @param color 填充颜色
  *
  */
-void mgl_hal_fill_rect(mgl_coord_t x,mgl_coord_t y,mgl_coord_t w,mgl_coord_t h,mgl_color_t color);
+void mgl_hal_fill_rect(mgl_coord_t x,mgl_coord_t y,mgl_coord_t w,mgl_coord_t h,mgl_color_value_t color);
 // #endregion
 
 // #region mgl_hal_bit_blt
@@ -86,11 +86,14 @@ void mgl_hal_fill_rect(mgl_coord_t x,mgl_coord_t y,mgl_coord_t w,mgl_coord_t h,m
  * @param bmp 指向源位图描述符的指针，包含像素数据、宽高和格式
  * @param transparent_color 需要视为透明的颜色值。任何与这个值相同的像素将不会被绘制。
  */
-void mgl_hal_bit_blt(mgl_coord_t x,mgl_coord_t y,const mgl_rect_t *src_rect,const mgl_bitmap_t *bmp,mgl_color_t transparent_color);
+void mgl_hal_bit_blt(mgl_coord_t x,mgl_coord_t y,const mgl_rect_t *src_rect,const mgl_bitmap_t *bmp,mgl_color_value_t transparent_color);
 // #endregion
 
-
-
+void mgl_hal_fill_rect_alpha(mgl_coord_t x,mgl_coord_t y,mgl_coord_t w,mgl_coord_t h,mgl_color_t color);
+void mgl_hal_bit_blt_alpha(mgl_coord_t x,mgl_coord_t y,const mgl_rect_t *src_rect,const mgl_bitmap_t *bmp,mgl_color_value_t transparent_color,uint8_t alpha);
+static inline void mgl_hal_set_pixel_alpha(mgl_coord_t x,mgl_coord_t y,mgl_color_t color){
+    mgl_hal_fill_rect_alpha(x,y,1,1,color);
+}
 #ifdef __cplusplus
 }
 #endif

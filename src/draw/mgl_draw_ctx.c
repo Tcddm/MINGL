@@ -30,7 +30,7 @@ void mgl_ctx_fill_rect(mgl_draw_ctx_t *ctx,mgl_coord_t x,mgl_coord_t y,mgl_coord
             painter=mgl_theme_resolve(painter->theme_slot);
         }
         if(painter->type==MGL_PAINTER_TYPE_SOLID){
-            mgl_hal_fill_rect(draw_area.x,draw_area.y,draw_area.w,draw_area.h,painter->solid_color);
+            mgl_hal_fill_rect_alpha(draw_area.x,draw_area.y,draw_area.w,draw_area.h,painter->solid_color);
         }else if(painter->type==MGL_PAINTER_TYPE_CUSTOM){
             painter->vtable->fill_rect(painter,draw_area.x,draw_area.y,draw_area.w,draw_area.h);
         }

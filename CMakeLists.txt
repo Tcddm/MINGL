@@ -12,6 +12,8 @@ endif()
 
 set(CONFIG_BOOL_VARS
         MGL_TOOL_ACCEL_FONT_GEN
+        MGL_FRAMEBUFFER_INTERNAL
+        MGL_FRAMEBUFFER_EXTERNAL
 )
 
 if(WIN32)
@@ -114,6 +116,10 @@ foreach(line ${CONFIG_LINES})
         endif()
     endforeach()
 endforeach()
+
+if(MGL_FRAMEBUFFER_INTERNAL OR MGL_FRAMEBUFFER_EXTERNAL)
+    list(APPEND MGL_CORE_SOURCES src/hal/mgl_hal_fb.c)
+endif()
 
 if(MGL_TOOL_ACCEL_FONT_GEN)
     file(GLOB MGL_FONT_GENERATED CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/generated/font/mgl_*_font_*.c)

@@ -49,7 +49,7 @@ static inline void mgl_ctx_draw_pixel(mgl_draw_ctx_t *ctx,mgl_coord_t x,mgl_coor
             painter=mgl_theme_resolve(painter->theme_slot);
         }
         if(painter->type==MGL_PAINTER_TYPE_SOLID){
-            mgl_hal_set_pixel(x,y,painter->solid_color);
+            mgl_hal_fill_rect_alpha(x,y,1,1,painter->solid_color);
         }else if(painter->type==MGL_PAINTER_TYPE_CUSTOM){
             painter->vtable->set_pixel(painter,x,y);
         }

@@ -115,15 +115,19 @@ static uint8_t render_gather_dirty_rects(mgl_widget_t *w,mgl_rect_t rects[]){
     }
 
     if(include_self){
-        if(count<MGL_DIRTY_RECT_MAX_COUNT){
-            mgl_rect_union(&w->prev_bounds,&w->bounds,&rects[count]);
-            count++;
-        }else{
-            mgl_rect_union(&rects[MGL_DIRTY_RECT_MAX_COUNT-1],
-                           &w->prev_bounds,&rects[MGL_DIRTY_RECT_MAX_COUNT-1]);
-            mgl_rect_union(&rects[MGL_DIRTY_RECT_MAX_COUNT-1],
-                           &w->bounds,&rects[MGL_DIRTY_RECT_MAX_COUNT-1]);
+        mgl_rect_t sr;
+        mgl_rect_union(&w->prev_bounds,&w->bounds,&sr);
+        uint8_t j=0;
+        for(uint8_t i=0;i<count;i++){
+            if(rects[i].x<sr.x || rects[i].y<sr.y ||
+                rects[i].x+rects[i].w>sr.x+sr.w ||
+                rects[i].y+rects[i].h>sr.y+sr.h){
+                if(j!=i){rects[j]=rects[i];}
+                j++;
+            }
         }
+        count=j;
+        count=render_add_dirty_rect(rects,count,&sr);
     }
 
     return count;
