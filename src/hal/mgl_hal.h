@@ -17,7 +17,7 @@ extern "C"{
  * @brief 在指定坐标绘制一个像素
  * @param x X坐标（从左到右，0 为最左）
  * @param y Y坐标（从上到下，0 为最上）
- * @param color 像素颜色
+ * @param color 像素颜色值
  */
 void mgl_hal_set_pixel(mgl_coord_t x,mgl_coord_t y,mgl_color_value_t color);
 // #endregion
@@ -66,7 +66,7 @@ void mgl_hal_clear_screen(void);
  * @param y Y坐标
  * @param w 矩形宽度（像素）
  * @param h 矩形高度（像素）
- * @param color 填充颜色
+ * @param color 填充颜色值
  *
  */
 void mgl_hal_fill_rect(mgl_coord_t x,mgl_coord_t y,mgl_coord_t w,mgl_coord_t h,mgl_color_value_t color);
@@ -89,11 +89,46 @@ void mgl_hal_fill_rect(mgl_coord_t x,mgl_coord_t y,mgl_coord_t w,mgl_coord_t h,m
 void mgl_hal_bit_blt(mgl_coord_t x,mgl_coord_t y,const mgl_rect_t *src_rect,const mgl_bitmap_t *bmp,mgl_color_value_t transparent_color);
 // #endregion
 
+// #region mgl_hal_fill_rect_alpha
+/**
+ * @brief 填充矩形区域，支持alpha混合
+ *
+ * @param x X坐标
+ * @param y Y坐标
+ * @param w 矩形宽度
+ * @param h 矩形高度
+ * @param color 矩形颜色
+ */
 void mgl_hal_fill_rect_alpha(mgl_coord_t x,mgl_coord_t y,mgl_coord_t w,mgl_coord_t h,mgl_color_t color);
+// #endregion
+
+// #region mgl_hal_bit_blt_alpha
+/**
+ * @brief 将位图中的指定矩形区域拷贝到屏幕上的目标坐标，支持alpha混合
+ *
+ * @param x X坐标
+ * @param y Y坐标
+ * @param src_rect 指向源位图中需要拷贝的矩形区域的指针
+ * @param bmp 指向源位图描述符的指针
+ * @param transparent_color 需要视为透明的颜色值
+ * @param alpha 透明度
+ */
 void mgl_hal_bit_blt_alpha(mgl_coord_t x,mgl_coord_t y,const mgl_rect_t *src_rect,const mgl_bitmap_t *bmp,mgl_color_value_t transparent_color,uint8_t alpha);
+// #endregion
+
+// #region mgl_hal_set_pixel_alpha
+/**
+ * @brief 在指定坐标绘制一个像素，支持alpha混合
+ *
+ * @param x X坐标
+ * @param y Y坐标
+ * @param color 像素颜色
+ */
 static inline void mgl_hal_set_pixel_alpha(mgl_coord_t x,mgl_coord_t y,mgl_color_t color){
     mgl_hal_fill_rect_alpha(x,y,1,1,color);
 }
+// #endregion
+
 #ifdef __cplusplus
 }
 #endif

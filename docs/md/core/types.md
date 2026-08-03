@@ -54,3 +54,6 @@
 ## /widget/list/mgl_list.h
 ### mgl_list_adapter_t
 <<< @/../../src/widget/list/mgl_list.h#mgl_list_adapter_t{c}
+## /hal/mgl_fb.h
+### mgl_fb_t
+<<< @/../../src/hal/mgl_fb.h#mgl_fb_t{c}

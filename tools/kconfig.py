@@ -45,7 +45,7 @@ def genheader(kconf=None):
             elif s.type in (kconfiglib.INT,kconfiglib.HEX):
                 f.write(f"#ifndef {s.name}\n#define {s.name} {s.str_value}\n#endif\n")
             elif s.type==kconfiglib.STRING:
-                f.write(f"#ifndef {s.name}\n#define {s.name} {s.str_value}\n#endif\n")
+                f.write(f"#ifndef {s.name}\n#define {s.name} \"{s.str_value}\"\n#endif\n")
         
         f.write("\n#endif\n")
     print(f"已生成头文件: {OUTPUT}")    

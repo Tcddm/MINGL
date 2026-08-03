@@ -12,10 +12,9 @@ static void draw(mgl_draw_ctx_t *ctx){
     mgl_coord_t r=(mgl_coord_t)(self->bounds.h/2);
 
     //通过当前状态决定轨道的最终画笔
-    const mgl_painter_t *track_painter;
-    if(switch_widget->value){
-        track_painter=MGL_THEME_ACCENT();
-    }else{
+    //要注意MGL_THEME_XXX的生命周期
+    const mgl_painter_t *track_painter=MGL_THEME_ACCENT();
+    if(!switch_widget->value){
         track_painter=&switch_widget->track;
     }
 
@@ -80,6 +79,7 @@ static bool on_event(mgl_widget_t *self,const mgl_event_t *event){
 
 // #region get_action
 static mgl_action_type_t get_action(mgl_widget_t *self,const mgl_event_t *event){
+    (void)self;
     //如果是抬起事件转发为值变化动作
     if(event->type==MGL_EVENT_TOUCH_UP){
         return MGL_ACTION_VALUE_CHANGED;

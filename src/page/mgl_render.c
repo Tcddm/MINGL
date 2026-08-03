@@ -4,6 +4,9 @@
 static uint32_t render_frames=0;
 static uint32_t skip_frames=0;
 static uint32_t last_report=0;
+static uint32_t render_total_ms=0;
+static uint32_t render_max_ms=0;
+static uint32_t render_min_ms=UINT32_MAX;
 #endif
 /**
  * @brief 将rect加入脏矩形数组，溢出时合并到最后一条
@@ -138,16 +141,16 @@ static uint8_t render_gather_dirty_rects(mgl_widget_t *w,mgl_rect_t rects[]){
 void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
     if(!root||!screen_clip){return;}
 
-    //深度栈：每层保存（裁剪区，清空波及区，波及是否有效）
+    //深度栈：每层保存（裁剪区，清空波及区数组）
     mgl_rect_t clip_stack[MGL_MAX_WIDGET_DEPTH];
-    mgl_rect_t clr_stack[MGL_MAX_WIDGET_DEPTH];
-    bool clr_valid[MGL_MAX_WIDGET_DEPTH];
+    mgl_rect_t clr_stack[MGL_MAX_WIDGET_DEPTH][MGL_DIRTY_RECT_MAX_COUNT];
+    uint8_t clr_count_stack[MGL_MAX_WIDGET_DEPTH];
     int depth=0;
 
     mgl_widget_t *w=root;
     mgl_rect_t cur_clip=*screen_clip;
-    mgl_rect_t cur_clear;
-    bool has_clear=false;
+    mgl_rect_t cur_clear[MGL_DIRTY_RECT_MAX_COUNT];
+    uint8_t cur_clear_count=0;
 
     while(w){
         // #region mgl_render_widget_step1
@@ -175,8 +178,14 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
 
         // #region mgl_render_widget_step4
         //逐矩形绘制和波及重绘
-        mgl_rect_t merged_clear=cur_clear;
-        bool has_merged_clear=has_clear;
+        mgl_rect_t clear_rects[MGL_DIRTY_RECT_MAX_COUNT];
+        uint8_t clear_count=0;
+
+        //继承父控件的波及区
+        for(uint8_t i=0;i<cur_clear_count;i++){
+            clear_rects[clear_count++]=cur_clear[i];
+        }
+
         if(dirty_count>0){
             //逐脏矩形与父裁剪区求交后绘制
             for(uint8_t i=0;i<dirty_count;i++){
@@ -193,33 +202,37 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
                     mgl_ctx_init(&ctx,w,&draw_area);
                     w->vtable->draw(&ctx);
                 }
-                
-                //累积到 merged_clear,子控件需要感知本层全部绘制区域
-                if(has_merged_clear){
-                    mgl_rect_union(&merged_clear, &draw_area, &merged_clear);
+
+                //不合并，独立追加到波及区
+                if(clear_count<MGL_DIRTY_RECT_MAX_COUNT){
+                    clear_rects[clear_count++]=draw_area;
                 }else{
-                    merged_clear=draw_area;
-                    has_merged_clear=true;
+                    mgl_rect_union(&clear_rects[MGL_DIRTY_RECT_MAX_COUNT-1],&draw_area,
+                                   &clear_rects[MGL_DIRTY_RECT_MAX_COUNT-1]);
                 }
             }
-            w->dirty = 0;
-        }else if(has_clear){
+            w->dirty=0;
+        }else if(cur_clear_count>0){
             //不脏但被祖先波及区覆盖要求强制重绘
-            mgl_rect_t draw_area;
-            if(mgl_rect_intersect(&w->bounds,&cur_clear,&draw_area)){
+            for(uint8_t i=0;i<cur_clear_count;i++){
+                mgl_rect_t draw_area;
+                if(!mgl_rect_intersect(&w->bounds,&cur_clear[i],&draw_area)){
+                    continue;
+                }
                 if(w->vtable->draw){
                     MGL_LOG_DBG(MGL_LOG_TAG_RENDER,
-                                "draw widget(%p): clip=(%d,%d,%d,%d) CLEARED",
-                                (void*)w,draw_area.x,draw_area.y,draw_area.w,draw_area.h);
+                                "draw widget(%p): clip=(%d,%d,%d,%d) CLEARED (#%d/%d)",
+                                (void*)w,draw_area.x,draw_area.y,draw_area.w,draw_area.h,
+                                i+1,cur_clear_count);
                     mgl_draw_ctx_t ctx;
                     mgl_ctx_init(&ctx,w,&draw_area);
                     w->vtable->draw(&ctx);
                 }
-                if(has_merged_clear){
-                    mgl_rect_union(&merged_clear,&draw_area,&merged_clear);
+                if(clear_count<MGL_DIRTY_RECT_MAX_COUNT){
+                    clear_rects[clear_count++]=draw_area;
                 }else{
-                    merged_clear=draw_area;
-                    has_merged_clear=true;
+                    mgl_rect_union(&clear_rects[MGL_DIRTY_RECT_MAX_COUNT-1],&draw_area,
+                                   &clear_rects[MGL_DIRTY_RECT_MAX_COUNT-1]);
                 }
             }
             w->dirty=0;
@@ -227,12 +240,19 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
         // #endregion
 
         // #region mgl_render_widget_step5
-        //子控件波及清空区（本层所有脏矩形绘制区域的合并结果）
-        mgl_rect_t next_clear;
-        bool next_has_clear=false;
-        if(has_merged_clear){
-            mgl_rect_intersect(&merged_clear,&w->bounds,&next_clear);
-            next_has_clear=true;
+        //子控件波及清空区（将本层波及区逐条和 bounds 求交传给子控件）
+        mgl_rect_t next_clear[MGL_DIRTY_RECT_MAX_COUNT];
+        uint8_t next_clear_count=0;
+        for(uint8_t i=0;i<clear_count;i++){
+            mgl_rect_t nc;
+            if(mgl_rect_intersect(&clear_rects[i],&w->bounds,&nc)){
+                if(next_clear_count<MGL_DIRTY_RECT_MAX_COUNT){
+                    next_clear[next_clear_count++]=nc;
+                }else{
+                    mgl_rect_union(&next_clear[MGL_DIRTY_RECT_MAX_COUNT-1],&nc,
+                                   &next_clear[MGL_DIRTY_RECT_MAX_COUNT-1]);
+                }
+            }
         }
         // #endregion
 
@@ -245,16 +265,20 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
                 goto next;
             }
             clip_stack[depth]=cur_clip;
-            clr_stack[depth]=cur_clear;
-            clr_valid[depth]=has_clear;
+            for(uint8_t i=0;i<cur_clear_count;i++){
+                clr_stack[depth][i]=cur_clear[i];
+            }
+            clr_count_stack[depth]=cur_clear_count;
             depth++;
 
             mgl_rect_t child_area;
             mgl_rect_intersect(&w->bounds,&cur_clip,&child_area);
             cur_clip=child_area;
 
-            cur_clear=next_clear;
-            has_clear=next_has_clear;
+            for(uint8_t i=0;i<next_clear_count;i++){
+                cur_clear[i]=next_clear[i];
+            }
+            cur_clear_count=next_clear_count;
             w=w->first_child;
             continue;
         }
@@ -274,8 +298,10 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
             if(w&&depth>0){
                 depth--;
                 cur_clip=clip_stack[depth];
-                cur_clear=clr_stack[depth];
-                has_clear=clr_valid[depth];
+                for(uint8_t i=0;i<clr_count_stack[depth];i++){
+                    cur_clear[i]=clr_stack[depth][i];
+                }
+                cur_clear_count=clr_count_stack[depth];
             }
             if(w){
                 w->dirty=0;
@@ -293,9 +319,15 @@ void mgl_render_page(mgl_page_t *page,mgl_rect_t screen){
     if(now-last_report>=MGL_FPS_REPORT_INTERVAL_MS){
         uint32_t total=render_frames+skip_frames;
         uint32_t idle=total ? (skip_frames*100/total) : 0;
-        MGL_LOG_DBG(MGL_LOG_TAG_RENDER,
-                     "FPS render=%u skip=%u total=%u idle=%u%%",
-                     render_frames,skip_frames,total,idle);
+        MGL_LOG_INFO(MGL_LOG_TAG_RENDER,
+                     "FPS render=%u skip=%u total=%u idle=%u%% avg=%ums min=%ums max=%ums",
+                     render_frames,skip_frames,total,idle,
+                     render_frames ? (render_total_ms/render_frames) : 0,
+                     render_frames ? render_min_ms : 0,
+                     render_max_ms);
+        render_max_ms=0;
+        render_min_ms=UINT32_MAX;
+        render_total_ms=0;
         render_frames=0;
         skip_frames=0;
         last_report=now;
@@ -313,5 +345,12 @@ void mgl_render_page(mgl_page_t *page,mgl_rect_t screen){
     uint32_t start=mgl_hal_get_tick_ms();
     MGL_LOG_DBG(MGL_LOG_TAG_RENDER,"render start");
     mgl_render_widget(page->root,&screen);
-    MGL_LOG_DBG(MGL_LOG_TAG_RENDER,"render done (%ums)",mgl_hal_get_tick_ms()-start);
+    mgl_hal_flush_display();
+    uint32_t time=mgl_hal_get_tick_ms()-start;
+    MGL_LOG_DBG(MGL_LOG_TAG_RENDER,"render done (%ums)",time);
+#if MGL_FPS_LOG
+    if(time>render_max_ms){ render_max_ms=time;}
+    if(time<render_min_ms){ render_min_ms=time;}
+    render_total_ms+=time;
+#endif
 }

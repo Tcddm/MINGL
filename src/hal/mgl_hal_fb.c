@@ -10,7 +10,7 @@ static mgl_fb_t g_fb={
         .stride_px=MGL_SCREEN_WIDTH
 };
 #else
-static mgl_fb_t g_mgl_fb;
+static mgl_fb_t g_fb;
 #endif
 
 void mgl_hal_set_fb(const mgl_fb_t *fb){

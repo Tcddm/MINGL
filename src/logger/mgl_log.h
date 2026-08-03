@@ -30,9 +30,23 @@ void mgl_log_set_output(mgl_log_output_t output);
 void mgl_log_write(const char *tag,mgl_log_level_t level,const char *fmt,...);
 // #endregion
 
+#if MGL_LOG_ENABLE_DBG
 #define MGL_LOG_DBG(tag,fmt,...)  mgl_log_write(tag,MGL_LOG_LEVEL_DBG,fmt,##__VA_ARGS__)
+#else
+#define MGL_LOG_DBG(tag,fmt,...) ((void)0)
+#endif
+
+#if MGL_LOG_ENABLE_INFO
 #define MGL_LOG_INFO(tag,fmt,...) mgl_log_write(tag,MGL_LOG_LEVEL_INFO,fmt,##__VA_ARGS__)
+#else
+#define MGL_LOG_INFO(tag,fmt,...) ((void)0)
+#endif
+
+#if MGL_LOG_ENABLE_ERROR
 #define MGL_LOG_ERROR(tag,fmt,...) mgl_log_write(tag,MGL_LOG_LEVEL_ERROR,fmt,##__VA_ARGS__)
+#else
+#define MGL_LOG_ERROR(tag,fmt,...) ((void)0)
+#endif
 
 #ifdef __cplusplus
 }

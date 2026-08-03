@@ -1,0 +1,16 @@
+if MGL_PLATFORM_FB
+menu "Linux FrameBuffer平台选项"
+config MGL_PLATFORM_FB_FB_DEVICE
+    string "FrameBuffer设备节点"
+    default "/dev/fb0"
+
+config MGL_TOUCH_EVDEV
+    bool "evdev触摸"
+    default y
+
+config MGL_TOUCH_EVDEV_DEVICE
+    string "触摸屏设备节点"
+    default "/dev/input/event1"
+    depends on MGL_TOUCH_EVDEV
+endmenu
+endif

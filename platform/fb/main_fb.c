@@ -1,6 +1,6 @@
-#include "hal_sdl.h"
+#include "hal_fb.h"
 #include <stdio.h>
-#include <SDL.h>
+#include <stdlib.h>
 #include "core/mgl_core.h"
 #include "page/mgl_render.h"
 #include "page/mgl_page_manager.h"
@@ -8,24 +8,22 @@
 
 #define FRAME_MS 16
 
-int main(int argc,char *argv[]) {
-    setvbuf(stdout,NULL,_IONBF,0);
-    
+int main(int argc, char *argv[]){
+    (void)argc;
+    (void)argv;
+
     mgl_core_init();
-    
-    if (!mgl_hal_sdl2_init("MINGL Simulator")) {
-        fprintf(stderr,"Failed to initialize SDL2.\n");
+
+    if(!mgl_hal_fb_init(MGL_PLATFORM_FB_FB_DEVICE)){
+        fprintf(stderr,"Failed to initialize framebuffer\n");
         return EXIT_FAILURE;
     }
-    
-    bool quit=false;
-    uint32_t last_tick=mgl_hal_get_tick_ms();
 
     mgl_page_push("main");
     mgl_hal_clear_screen();
-    while(!quit){
-        mgl_hal_sdl2_poll_events(&quit);
 
+    uint32_t last_tick=mgl_hal_get_tick_ms();
+    while(1){
         mgl_render_page(mgl_get_current_page(),g_mgl_full_screen_ctx.clip);
 
         mgl_touch_data_t touch;
@@ -35,14 +33,9 @@ int main(int argc,char *argv[]) {
             mgl_process_touch_data(NULL,mgl_get_current_page()->root);
         }
 
-
-        while (mgl_hal_get_tick_ms()-last_tick<FRAME_MS){
-            mgl_hal_sdl2_poll_events(&quit);
-            if(quit){break;}
-        }
+        while(mgl_hal_get_tick_ms()-last_tick<FRAME_MS);
         last_tick=mgl_hal_get_tick_ms();
     }
 
-    mgl_hal_sdl2_cleanup();
     return 0;
 }

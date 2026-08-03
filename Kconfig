@@ -5,7 +5,12 @@ choice
     default MGL_PLATFORM_SDL
 config MGL_PLATFORM_SDL
     bool "SDL2模拟器"
+config MGL_PLATFORM_FB
+    bool "Linux FrameBuffer"	
 endchoice
+
+osource "platform/sdl/Kconfig"
+osource "platform/fb/Kconfig"
 
 menu "硬件加速特性"
 
@@ -31,6 +36,7 @@ menu "图形缓冲"
 
 choice
     prompt "帧缓冲模式"
+    default MGL_FRAMEBUFFER_EXTERNAL if MGL_PLATFORM_FB
     default MGL_FRAMEBUFFER_NONE
 
 config MGL_FRAMEBUFFER_NONE
@@ -67,13 +73,48 @@ config MGL_TOUCH_MAX_FINGERS
 config MGL_FILL_POLYGON_MAX_INTERSECTS
     int "填充多边形最大交点数"
     default 128
+menu "日志"
+
+config MGL_LOG_ENABLE_DBG
+    bool "调试日志（DBG）"
+    default n
+	
+menu "调试日志选项"
+depends	on MGL_LOG_ENABLE_DBG
+
+config MGL_LOG_ENABLE_LAYOUT
+    bool "布局与测量日志"
+    default y
+	
+config MGL_LOG_ENABLE_RENDER
+    bool "渲染日志"
+    default y	
+	
+config MGL_LOG_ENABLE_EVENT
+    bool "事件日志"
+    default y		
+	
+endmenu	
+
+config MGL_LOG_ENABLE_INFO
+    bool "信息日志（INFO）"
+    default y
+
+config MGL_LOG_ENABLE_ERROR
+    bool "错误日志（ERROR）"
+    default y
+	
 config MGL_FPS_LOG
     bool "FPS日志输出"
     default y
+	
 config MGL_FPS_REPORT_INTERVAL_MS
     int "FPS日志输出间隔（ms）"
     default 2000
-	depends on MGL_FPS_LOG
+	depends on MGL_FPS_LOG		
+
+endmenu	
+
 config MGL_WIDGET_NAME_FIELD_ENABLE
 	bool "控件name字段"
 	default y
@@ -120,6 +161,3 @@ config MGL_FONT_GEN_DEFAULT_SIZE
     depends on MGL_TOOL_ACCEL_FONT_GEN
 
 endmenu	
-
-
-source "platform/sdl/Kconfig"

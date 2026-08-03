@@ -35,6 +35,13 @@ typedef enum {
 } mgl_theme_slot_t;
 // #endregion
 
+// 注意：以下宏展开为复合字面量指针，仅在其所在块的完整表达式内有效。
+// 安全用法：声明时初始化或直接传参
+// const mgl_painter_t *p=MGL_THEME_ACCENT();
+// mgl_ctx_fill_rect(ctx,...,MGL_THEME_ACCENT());
+// 危险用法：if块内赋值给外部变量
+//   const mgl_painter_t *p;
+//   if(x){ p=MGL_THEME_ACCENT();}  //出if后指针失效
 // #region theme_define
 //主题背景画笔
 #define MGL_THEME_BG() (&(const mgl_painter_t){.type=MGL_PAINTER_TYPE_THEMED,.theme_slot=MGL_THEME_SLOT_BG})

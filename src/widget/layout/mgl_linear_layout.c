@@ -3,6 +3,11 @@
 
 #define LOG_TAG MGL_LOG_TAG_WIDGET(linear_layout)
 
+#if !MGL_LOG_ENABLE_LAYOUT
+#undef MGL_LOG_DBG
+#define MGL_LOG_DBG(tag,fmt,...) ((void)0)
+#endif
+
 static void draw(mgl_draw_ctx_t *ctx){
     mgl_linear_layout_t *layout=container_of(ctx->widget,mgl_linear_layout_t,base);
     mgl_painter_t painter=layout->painter;

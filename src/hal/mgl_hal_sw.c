@@ -27,9 +27,8 @@ void mgl_hal_bit_blt(mgl_coord_t x,mgl_coord_t y,const mgl_rect_t *src_rect,cons
             for (mgl_coord_t dy=0;dy<src_h;dy++) {
                 for (mgl_coord_t dx=0;dx<src_w;dx++) {
                     uint32_t pixel_idx=(src_y+dy)*bmp_w+(src_x+dx);
-                    mgl_color_value_t color={.value=pixels[pixel_idx],.alpha=255};
-                    if(color.value!=transparent_color.value){
-                        mgl_hal_set_pixel((mgl_coord_t)(x+dx),(mgl_coord_t)(y+dy),color);
+                    if(pixels[pixel_idx]!=transparent_color){
+                        mgl_hal_set_pixel((mgl_coord_t)(x+dx),(mgl_coord_t)(y+dy),pixels[pixel_idx]);
                     }
 
                 }

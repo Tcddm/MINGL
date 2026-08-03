@@ -22,6 +22,7 @@ export default defineConfig({
             collapsed: false,
             items: [
               { text: 'SDL模拟器', link: '/quick/sdl' },
+			  { text: 'FrameBuffer', link: '/quick/fb' }
             ]
         },
 		{
@@ -30,7 +31,8 @@ export default defineConfig({
             items: [
               { text: '架构总览', link: '/core/architecture' },
               { text: '核心工具 API', link: '/core/api' },
-              { text: '类型表', link: '/core/types' }
+              { text: '类型表', link: '/core/types' },
+			  { text: '图形缓冲', link: '/core/framebuffer' }
             ]
           },
           {
