@@ -1,5 +1,6 @@
 #include "mgl_render.h"
 #include "logger/mgl_log.h"
+#include "mgl_page_manager.h"
 #if MGL_FPS_LOG
 static uint32_t render_frames=0;
 static uint32_t skip_frames=0;
@@ -138,7 +139,7 @@ static uint8_t render_gather_dirty_rects(mgl_widget_t *w,mgl_rect_t rects[]){
 
 
 
-void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
+void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip,mgl_rect_t *flush_rects,uint8_t *flush_count){
     if(!root||!screen_clip){return;}
 
     //深度栈：每层保存（裁剪区，清空波及区数组）
@@ -155,7 +156,7 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
     while(w){
         // #region mgl_render_widget_step1
         //不可见则跳过整个子树
-        if(!w->visible){goto next;}
+        if(w->hidden){goto next;}
         // #endregion
 
         // #region mgl_render_widget_step2
@@ -210,6 +211,12 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
                     mgl_rect_union(&clear_rects[MGL_DIRTY_RECT_MAX_COUNT-1],&draw_area,
                                    &clear_rects[MGL_DIRTY_RECT_MAX_COUNT-1]);
                 }
+                if(*flush_count<MGL_DIRTY_RECT_MAX_COUNT){
+                    flush_rects[(*flush_count)++]=draw_area;
+                }else{
+                    mgl_rect_union(&flush_rects[MGL_DIRTY_RECT_MAX_COUNT-1],&draw_area,
+                                   &flush_rects[MGL_DIRTY_RECT_MAX_COUNT-1]);
+                }
             }
             w->dirty=0;
         }else if(cur_clear_count>0){
@@ -233,6 +240,12 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip){
                 }else{
                     mgl_rect_union(&clear_rects[MGL_DIRTY_RECT_MAX_COUNT-1],&draw_area,
                                    &clear_rects[MGL_DIRTY_RECT_MAX_COUNT-1]);
+                }
+                if(*flush_count<MGL_DIRTY_RECT_MAX_COUNT){
+                    flush_rects[(*flush_count)++]=draw_area;
+                }else{
+                    mgl_rect_union(&flush_rects[MGL_DIRTY_RECT_MAX_COUNT-1],&draw_area,
+                                   &flush_rects[MGL_DIRTY_RECT_MAX_COUNT-1]);
                 }
             }
             w->dirty=0;
@@ -333,7 +346,11 @@ void mgl_render_page(mgl_page_t *page,mgl_rect_t screen){
         last_report=now;
     }
 #endif
-    if (!page||!page->root||!page->root->dirty){
+    if(!page||!page->root||
+        (!page->root->dirty
+         &&!(mgl_page_get_overlay()&&mgl_page_get_overlay()->root
+            &&mgl_page_get_overlay()->root->dirty)
+        )){
 #if MGL_FPS_LOG
     skip_frames++;
 #endif
@@ -344,8 +361,28 @@ void mgl_render_page(mgl_page_t *page,mgl_rect_t screen){
 #endif
     uint32_t start=mgl_hal_get_tick_ms();
     MGL_LOG_DBG(MGL_LOG_TAG_RENDER,"render start");
-    mgl_render_widget(page->root,&screen);
-    mgl_hal_flush_display();
+    mgl_rect_t flush_rects[MGL_DIRTY_RECT_MAX_COUNT];
+    uint8_t flush_count=0;
+    uint8_t page_was_dirty=page->root->dirty;
+    mgl_render_widget(page->root,&screen,flush_rects,&flush_count);
+    mgl_page_t *overlay=mgl_page_get_overlay();
+    if(overlay&&overlay->root){
+        if(page_was_dirty){
+            mgl_widget_t *stack[MGL_MAX_WIDGET_DEPTH];
+            int sp=0;
+            stack[sp++]=overlay->root;
+            while(sp>0){
+                mgl_widget_t *ow=stack[--sp];
+                ow->dirty=0;
+                for(mgl_widget_t *c=ow->first_child;c;c=c->next_sibling){
+                    if(sp<MGL_MAX_WIDGET_DEPTH){stack[sp++]=c;}
+                }
+            }
+            mgl_widget_mark_full_dirty(overlay->root);
+        }
+        mgl_render_widget(overlay->root,&screen,flush_rects,&flush_count);
+    }
+    mgl_hal_flush_display(flush_rects,flush_count);
     uint32_t time=mgl_hal_get_tick_ms()-start;
     MGL_LOG_DBG(MGL_LOG_TAG_RENDER,"render done (%ums)",time);
 #if MGL_FPS_LOG

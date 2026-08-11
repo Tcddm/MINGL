@@ -25,7 +25,7 @@ void mgl_render_page(mgl_page_t *page,mgl_rect_t screen);
  * @param root 根组件指针
  * @param screen_clip 屏幕区域矩形（通常为全屏），用于初始化裁剪区域
  */
-void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip);
+void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip,mgl_rect_t *flush_rects,uint8_t *flush_count);
 // #endregion
 
 #ifdef __cplusplus

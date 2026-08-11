@@ -17,6 +17,7 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_type_t acti
     mgl_coord_t pref_w; \
     mgl_coord_t pref_h; \
     uint16_t id; \
+    bool hidden; \
     mgl_action_handler_t action_handler;
 
 #define MGL_WIDGET_BASE_FIELD_HANDLE(custom_widget,custom_widget_args) \
@@ -26,6 +27,7 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_type_t acti
         custom_widget->base.pref_h=custom_widget_args->pref_h; \
         custom_widget->base.id=custom_widget_args->id; \
         custom_widget->base.action_handler=custom_widget_args->action_handler; \
+        custom_widget->base.hidden=custom_widget_args->hidden; \
     }while(0)
 
 
@@ -134,7 +136,7 @@ struct mgl_widget_t{
     uint8_t dirty:1;
     uint8_t layout_dirty:1;
     uint8_t force_redraw:1;
-    uint8_t visible:1;
+    uint8_t hidden:1;
     uint8_t enabled:1;
     uint8_t focused:1;
     uint8_t reserved:2;
@@ -190,6 +192,7 @@ static inline void mgl_widget_set_dirty_content(mgl_widget_t *w){
 static inline void mgl_widget_mark_full_dirty(mgl_widget_t *w) {
     w->force_redraw=1;
     w->prev_bounds=w->bounds;
+    w->layout_dirty=1;
     mgl_widget_set_dirty(w);
 }
 // #endregion

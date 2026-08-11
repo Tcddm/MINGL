@@ -1,5 +1,8 @@
 #include "mgl_page_manager.h"
 #include "logger/mgl_log.h"
+#if MGL_OVERLAY
+#include "overlay/mgl_overlay_default.h"
+#endif
 static mgl_page_t *page_stack[MGL_PAGE_STACK_MAX_DEPTH];
 static uint8_t page_stack_top=0;
 
@@ -77,6 +80,10 @@ bool mgl_page_push(const char *name){
     mgl_page_layout(page);
 
     mgl_hal_clear_screen();
+    mgl_hal_flush_display(NULL,0);
+    if(mgl_page_get_overlay()&&mgl_page_get_overlay()->root){
+        mgl_widget_mark_full_dirty(mgl_page_get_overlay()->root);
+    }
 
     return true;
 }
@@ -91,6 +98,10 @@ void mgl_page_back(void){
     mgl_page_pool_free(old_page->pool_start);
     mgl_page_t *new_page=mgl_get_current_page();
     mgl_hal_clear_screen();
+    mgl_hal_flush_display(NULL,0);
+    if(mgl_page_get_overlay()&&mgl_page_get_overlay()->root){
+        mgl_widget_mark_full_dirty(mgl_page_get_overlay()->root);
+    }
     mgl_current_page_redraw();
     MGL_LOG_INFO(MGL_LOG_TAG_PAGE,"back to %s page (destroyed %s page)",
                  new_page->desc->name,
@@ -113,7 +124,7 @@ mgl_widget_t *mgl_widget_find_by_id(mgl_widget_t *root,uint16_t id){
     while(stack_top>0){
         mgl_widget_t *w=stack[--stack_top];
 
-        if (w->id==id) {
+        if(w->id==id){
             return w;
         }
 
@@ -153,4 +164,26 @@ void mgl_current_page_redraw(void){
         }
     }
     mgl_page_mark_all_widget_dirty(page->root);
+}
+
+void mgl_page_init_overlay(void){
+#if MGL_OVERLAY
+    MGL_LOG_INFO(MGL_LOG_TAG_OVERLAY,"start init overlay");
+    mgl_page_t *(*make)(void)=NULL;
+
+    const mgl_page_descriptor_t *desc=get_descriptor_by_name("overlay");
+    if(desc){
+        make=desc->make;
+    }else{
+        make=mgl_make_default_overlay;
+    }
+
+    mgl_page_t *page=make();
+    if(!page){return;}
+    page->desc=desc;
+    mgl_page_set_overlay(page);
+
+    mgl_page_layout(page);
+    MGL_LOG_INFO(MGL_LOG_TAG_OVERLAY,"overlay init done");
+#endif
 }

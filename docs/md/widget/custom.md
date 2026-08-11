@@ -129,7 +129,7 @@ action_handler|[mgl_action_handler_t](/core/types#mgl_action_handler_t)|NULL|动
 dirty|uint8_t:1|0|是否脏
 layout_dirty|uint8_t:1|0|是否布局脏
 force_redraw|uint8_t:1|0|是否强制重绘
-visible|uint8_t:1|0|是否可见
+hidden|uint8_t:1|0|是否隐藏
 enabled|uint8_t:1|0|是否启用
 focused|uint8_t:1|0|是否有焦点
 reserved|uint8_t:2|0|保留位

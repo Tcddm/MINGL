@@ -32,7 +32,7 @@ static void remove_finger(int idx){
 }
 
 static mgl_widget_t *get_deepest_hit_widget(mgl_widget_t *root,mgl_coord_t x,mgl_coord_t y){
-    if(!root||!root->visible){return NULL;}
+    if(!root||root->hidden){return NULL;}
 
     mgl_widget_t *stack[MGL_HIT_TEST_MAX_DEPTH];
     int stack_top=0;
@@ -41,7 +41,7 @@ static mgl_widget_t *get_deepest_hit_widget(mgl_widget_t *root,mgl_coord_t x,mgl
 
     while(stack_top>0){
         mgl_widget_t *w=stack[--stack_top];
-        if(!w->visible||!w->enabled){continue;}
+        if(w->hidden||!w->enabled){continue;}
 
         if(x>=w->bounds.x&&x<w->bounds.x+w->bounds.w&&
             y>=w->bounds.y&&y<w->bounds.y+w->bounds.h){
@@ -61,6 +61,16 @@ static mgl_widget_t *get_deepest_hit_widget(mgl_widget_t *root,mgl_coord_t x,mgl
         }
     }
     return hit;
+}
+
+#include "page/mgl_page_manager.h"
+static mgl_widget_t *get_hit_widget_with_overlay(mgl_widget_t *page_root,mgl_coord_t x,mgl_coord_t y){
+    mgl_page_t *overlay=mgl_page_get_overlay();
+    if(overlay&&overlay->root){
+        mgl_widget_t *target=get_deepest_hit_widget(overlay->root,x,y);
+        if(target&&target!=overlay->root){return target;}
+    }
+    return get_deepest_hit_widget(page_root,x,y);
 }
 
 mgl_action_type_t mgl_event_default_get_action(mgl_widget_t *self,const mgl_event_t *event){
@@ -97,7 +107,7 @@ static bool event_bubble(mgl_widget_t *from,mgl_event_t *event){
 }
 
 bool mgl_dispatch_touch_event(mgl_widget_t *root,mgl_event_t *event){
-    mgl_widget_t *target= get_deepest_hit_widget(root,event->touch.x,event->touch.y);
+    mgl_widget_t *target=get_hit_widget_with_overlay(root,event->touch.x,event->touch.y);
     if(!target){return false;}
     return event_bubble(target, event);
 }
@@ -115,9 +125,9 @@ void mgl_process_touch_data(const mgl_touch_data_t *data,mgl_widget_t *root){
             }
         }
         if(!alive){
-            mgl_widget_t *target=get_deepest_hit_widget(root,
-                                                        fingers[i].down_x,
-                                                        fingers[i].down_y);
+            mgl_widget_t *target=get_hit_widget_with_overlay(root,
+                                                            fingers[i].down_x,
+                                                            fingers[i].down_y);
             if(target){
                 mgl_event_t event={
                         .type=MGL_EVENT_TOUCH_UP,
@@ -149,9 +159,9 @@ void mgl_process_touch_data(const mgl_touch_data_t *data,mgl_widget_t *root){
         }else if(data->points[i].x != fingers[idx].x ||
                  data->points[i].y != fingers[idx].y){
             //移动
-            mgl_widget_t *target = get_deepest_hit_widget(root,
-                                                          fingers[idx].down_x,
-                                                          fingers[idx].down_y);
+            mgl_widget_t *target=get_hit_widget_with_overlay(root,
+                                                              fingers[idx].down_x,
+                                                              fingers[idx].down_y);
             if(target){
                 mgl_event_t event={
                         .type=MGL_EVENT_TOUCH_MOVE,

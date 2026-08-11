@@ -2,9 +2,7 @@
 #include <stdio.h>
 #include <SDL.h>
 #include "core/mgl_core.h"
-#include "page/mgl_render.h"
 #include "page/mgl_page_manager.h"
-#include "event/mgl_event.h"
 
 #define FRAME_MS 16
 
@@ -22,19 +20,9 @@ int main(int argc,char *argv[]) {
     uint32_t last_tick=mgl_hal_get_tick_ms();
 
     mgl_page_push("main");
-    mgl_hal_clear_screen();
     while(!quit){
         mgl_hal_sdl2_poll_events(&quit);
-
-        mgl_render_page(mgl_get_current_page(),g_mgl_full_screen_ctx.clip);
-
-        mgl_touch_data_t touch;
-        if(mgl_hal_get_touch(&touch)){
-            mgl_process_touch_data(&touch,mgl_get_current_page()->root);
-        }else{
-            mgl_process_touch_data(NULL,mgl_get_current_page()->root);
-        }
-
+        mgl_core_tick();
 
         while (mgl_hal_get_tick_ms()-last_tick<FRAME_MS){
             mgl_hal_sdl2_poll_events(&quit);

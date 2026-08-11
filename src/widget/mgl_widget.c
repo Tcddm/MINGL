@@ -15,7 +15,7 @@ void mgl_widget_init(mgl_widget_t *widget,const mgl_widget_vtable_t *vtable,cons
     
     widget->dirty=1;
     widget->layout_dirty=0;
-    widget->visible=1;
+    widget->hidden=0;
     widget->enabled=1;
     widget->focused=0;
     widget->reserved=0;

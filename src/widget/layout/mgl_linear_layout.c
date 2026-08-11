@@ -57,6 +57,10 @@ static void linear_layout_measure(mgl_widget_t *self,
     mgl_widget_t *fill_child=NULL;
 
     while(child){
+        if(child->hidden){
+            child=child->next_sibling;
+            continue;
+        }
         if(!child->vtable->measure){
             child=child->next_sibling;
             continue;
@@ -178,6 +182,10 @@ static void linear_layout_layout(mgl_widget_t *self, const mgl_rect_t *area) {
     uint8_t fixed_count=0;
     mgl_widget_t *tmp=self->first_child;
     while(tmp){
+        if(tmp->hidden){
+            tmp=tmp->next_sibling;
+            continue;
+        }
         if(tmp->vtable->measure){
             bool is_fill=(layout->direction==MGL_LINEAR_HORIZONTAL)
                            ? (tmp->pref_w==-1) : (tmp->pref_h==-1);
@@ -232,6 +240,10 @@ static void linear_layout_layout(mgl_widget_t *self, const mgl_rect_t *area) {
 
     while(child){
 
+        if(child->hidden){
+            child=child->next_sibling;
+            continue;
+        }
         if(!child->vtable->measure){
             child=child->next_sibling;
             continue;

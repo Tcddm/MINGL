@@ -15,8 +15,8 @@ static void sync_scrollbar(mgl_list_t *list){
                               list->content_height,
                               list->base.bounds.h,
                               list->scroll_y);
-    list->scrollbar.base.visible=
-            (list->content_height>list->base.bounds.h);
+    list->scrollbar.base.hidden=
+            !(list->content_height>list->base.bounds.h);
 }
 
 static void list_recycle(mgl_list_t *list){
@@ -145,13 +145,13 @@ static void list_recycle(mgl_list_t *list){
                     list->pool[found].root,
                     &list->pool[found].root->bounds);
         }
-        list->pool[found].root->visible=true;
+        list->pool[found].root->hidden=false;
     }
 
     //释放仍高位标记的槽位
     for(uint8_t s=0;s<pool_n;s++){
         if(list->pool[s].list_index & 0x8000){
-            list->pool[s].root->visible=false;
+            list->pool[s].root->hidden=true;
             list->pool[s].list_index=MGL_LIST_INVALID_INDEX;
         }
     }
@@ -240,7 +240,7 @@ static void layout(mgl_widget_t *self,const mgl_rect_t *area){
                 (mgl_coord_t)(area->x+area->w-list->scrollbar.bar_w),
                 area->y,list->scrollbar.bar_w,area->h
         };
-        list->scrollbar.base.visible=(list->content_height>area->h);
+        list->scrollbar.base.hidden=!(list->content_height>area->h);
     }
 
     bool first_time=(list->pool==NULL);
@@ -267,7 +267,7 @@ static void layout(mgl_widget_t *self,const mgl_rect_t *area){
     }else{
         for(uint8_t i=0;i<list->pool_size;i++){
             if(list->pool[i].list_index==MGL_LIST_INVALID_INDEX){ continue;}
-            if(!list->pool[i].root || !list->pool[i].root->visible){ continue;}
+            if(!list->pool[i].root || list->pool[i].root->hidden){ continue;}
             int32_t slot_y=compute_cumulative_y(list,list->pool[i].list_index);
             list->pool[i].root->bounds.x=area->x;
             list->pool[i].root->bounds.y=

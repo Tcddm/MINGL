@@ -13,6 +13,7 @@ extern "C"{
 #define MGL_LOG_TAG_WIDGET(name) "Widget - " #name
 #define MGL_LOG_TAG_RENDER "Render"
 #define MGL_LOG_TAG_EVENT "Event"
+#define MGL_LOG_TAG_OVERLAY "Overlay"
 // #endregion
 
 typedef enum{

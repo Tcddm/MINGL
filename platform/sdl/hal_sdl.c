@@ -165,7 +165,9 @@ bool mgl_hal_get_touch(mgl_touch_data_t *touch){
     return false;
 }
 
-void mgl_hal_flush_display(void){
+void mgl_hal_flush_display(mgl_rect_t *flush_rects, uint8_t flush_count){
+    (void)flush_rects;
+    (void)flush_count;
 #if MGL_FRAMEBUFFER
     SDL_UpdateTexture(g_texture,NULL,mgl_hal_get_fb(),
                       (int)(g_mgl_screen_width*sizeof(mgl_color_value_t)));

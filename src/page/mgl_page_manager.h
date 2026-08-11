@@ -36,6 +36,10 @@ mgl_widget_t *mgl_page_find_widget_by_id(mgl_page_t *page,uint16_t id);
 mgl_widget_t *mgl_current_page_find_widget_by_id(uint16_t id);
 void mgl_current_page_redraw(void);
 
+void mgl_page_init_overlay(void);
+
+#include "overlay/mgl_overlay.h"
+
 #ifdef __cplusplus
 }
 #endif

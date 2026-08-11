@@ -14,6 +14,7 @@ set(CONFIG_BOOL_VARS
         MGL_TOOL_ACCEL_FONT_GEN
         MGL_FRAMEBUFFER_INTERNAL
         MGL_FRAMEBUFFER_EXTERNAL
+        MGL_OVERLAY
 )
 
 if(WIN32)
@@ -119,6 +120,10 @@ endforeach()
 
 if(MGL_FRAMEBUFFER_INTERNAL OR MGL_FRAMEBUFFER_EXTERNAL)
     list(APPEND MGL_CORE_SOURCES src/hal/mgl_hal_fb.c)
+endif()
+
+if(MGL_OVERLAY)
+    list(APPEND MGL_CORE_SOURCES src/overlay/mgl_overlay.c src/overlay/mgl_overlay_default.c)
 endif()
 
 if(MGL_TOOL_ACCEL_FONT_GEN)

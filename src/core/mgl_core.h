@@ -7,6 +7,7 @@ extern "C"{
 #endif
 void mgl_core_init(void);
 void mgl_core_set_screen_size(mgl_coord_t width,mgl_coord_t height);
+void mgl_core_tick(void);
 #ifdef __cplusplus
 }
 #endif

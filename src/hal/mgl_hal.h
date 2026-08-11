@@ -44,8 +44,10 @@ bool mgl_hal_get_touch(mgl_touch_data_t *touch);
 // #region mgl_hal_flush_display
 /**
  * @brief 将绘制内容刷新到物理屏幕
+ * @param rects 视图刷新的矩形数组
+ * @param count rects中的条目数（0表示需要全屏幕刷新）
  */
-void mgl_hal_flush_display(void);
+void mgl_hal_flush_display(mgl_rect_t *rects, uint8_t count);
 // #endregion
 
 // #region mgl_hal_clear_screen

@@ -29,6 +29,7 @@ static uint32_t g_start_tick;
 static uint16_t *g_fbdev_mmap;
 static size_t g_fbdev_size;
 static mgl_color_value_t *g_cached_buf;
+static uint32_t g_fb_line_length;
 
 bool mgl_hal_fb_init(const char *fb_device){
     int fd=open(fb_device, O_RDWR);
@@ -57,6 +58,7 @@ bool mgl_hal_fb_init(const char *fb_device){
 
     g_fbdev_mmap=(uint16_t *)fb_mmap;
     g_fbdev_size=(size_t)finfo.line_length*vinfo.yres;
+    g_fb_line_length=finfo.line_length;
 
     uint32_t stride_px=(uint32_t)(finfo.line_length/sizeof(uint16_t));
     g_cached_buf=malloc(g_fbdev_size);
@@ -95,8 +97,21 @@ uint32_t mgl_hal_get_tick_ms(void){
     return (uint32_t)(ts.tv_sec*1000+ts.tv_nsec/1000000)-g_start_tick;
 }
 
-void mgl_hal_flush_display(void){
-    memcpy(g_fbdev_mmap,mgl_hal_get_fb(),g_fbdev_size);
+void mgl_hal_flush_display(mgl_rect_t *flush_rects, uint8_t flush_count){
+    if(flush_count==0){
+        memcpy(g_fbdev_mmap,g_cached_buf,g_fbdev_size);
+        return;
+    }
+    const uint8_t *src=(const uint8_t *)g_cached_buf;
+    uint8_t *dst=(uint8_t *)g_fbdev_mmap;
+    for(uint8_t i=0;i<flush_count;i++){
+        uint32_t row_bytes=(uint32_t)flush_rects[i].w*sizeof(uint16_t);
+        for(mgl_coord_t y=0;y<flush_rects[i].h;y++){
+            uint32_t off=(uint32_t)(y+flush_rects[i].y)*g_fb_line_length
+                         +(uint32_t)flush_rects[i].x*sizeof(uint16_t);
+            memcpy(dst+off,src+off,row_bytes);
+        }
+    }
 }
 
 bool mgl_hal_get_touch(mgl_touch_data_t *touch){
@@ -128,19 +143,18 @@ bool mgl_hal_get_touch(mgl_touch_data_t *touch){
                 break;
             }
         }
-        if(ev.type==EV_SYN&&ev.code==SYN_REPORT){
-            for(int i=0;i<MGL_TOUCH_MAX_FINGERS;i++){
-                if(g_touch.tracking_id[i]>=0) {
-                    touch->points[touch->count].x=g_touch.x[i];
-                    touch->points[touch->count].y=g_touch.y[i];
-                    touch->points[touch->count].pressed=true;
-                    touch->points[touch->count].finger_id=(uint8_t)i;
-                    touch->count++;
-                }
-            }
-            return touch->count>0;
+    }
+    //将所有已读事件消化完后，用最终追踪状态构建触摸数据
+    for(int i=0;i<MGL_TOUCH_MAX_FINGERS;i++){
+        if(g_touch.tracking_id[i]>=0) {
+            touch->points[touch->count].x=g_touch.x[i];
+            touch->points[touch->count].y=g_touch.y[i];
+            touch->points[touch->count].pressed=true;
+            touch->points[touch->count].finger_id=(uint8_t)i;
+            touch->count++;
         }
     }
+    return touch->count>0;
 #endif
     return false;
 }
