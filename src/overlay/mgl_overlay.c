@@ -16,3 +16,22 @@ mgl_widget_t *mgl_overlay_find_widget_by_id(uint16_t id){
     return mgl_widget_find_by_id(g_overlay_page->root,id);
 }
 
+void mgl_overlay_show(mgl_widget_t *w){
+    if(!w){ return;}
+    w->hidden=0;
+    mgl_widget_set_dirty(w);
+    mgl_page_t *page=mgl_get_current_page();
+    if(page && page->root){
+        mgl_widget_mark_full_dirty(page->root);
+    }
+}
+
+void mgl_overlay_hide(mgl_widget_t *w){
+    if(!w){ return;}
+    w->hidden=1;
+    mgl_widget_set_dirty(w);
+    mgl_page_t *page=mgl_get_current_page();
+    if(page && page->root){
+        mgl_widget_mark_full_dirty(page->root);
+    }
+}

@@ -73,6 +73,15 @@ config MGL_TOUCH_MAX_FINGERS
 config MGL_FILL_POLYGON_MAX_INTERSECTS
     int "填充多边形最大交点数"
     default 128
+config MGL_OVERLAY
+    bool "全局Overlay支持"
+    default y
+config MGL_TIMER_POOL_SIZE
+    int "全局定时器池大小"
+    default 4
+config MGL_TIMER_MAX_ACTIVE
+    int "同时活跃定时器上限"
+    default 4
 menu "日志"
 
 config MGL_LOG_ENABLE_DBG
@@ -133,10 +142,6 @@ menu "示例界面"
     endchoice
 
 endmenu
-
-config MGL_OVERLAY
-    bool "全局Overlay支持"
-    default y
 
 menu "字体生成工具"
 

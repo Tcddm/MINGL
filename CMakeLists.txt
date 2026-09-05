@@ -101,6 +101,8 @@ set(MGL_CORE_SOURCES
         src/widget/list/mgl_list.c
         src/theme/mgl_theme.c
         src/widget/switch/mgl_switch.c
+        src/timer/mgl_timer.c
+        src/overlay/toast/mgl_toast.c
 )
 
 file(STRINGS "${CMAKE_SOURCE_DIR}/.config" CONFIG_LINES)
@@ -123,7 +125,9 @@ if(MGL_FRAMEBUFFER_INTERNAL OR MGL_FRAMEBUFFER_EXTERNAL)
 endif()
 
 if(MGL_OVERLAY)
-    list(APPEND MGL_CORE_SOURCES src/overlay/mgl_overlay.c src/overlay/mgl_overlay_default.c)
+    list(APPEND MGL_CORE_SOURCES
+            src/overlay/mgl_overlay.c
+            src/overlay/mgl_overlay_default.c)
 endif()
 
 if(MGL_TOOL_ACCEL_FONT_GEN)

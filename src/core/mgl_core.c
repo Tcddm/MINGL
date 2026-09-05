@@ -3,6 +3,8 @@
 #include "page/mgl_page_manager.h"
 #include "event/mgl_event.h"
 #include "page/mgl_render.h"
+#include "timer/mgl_timer.h"
+
 mgl_coord_t g_mgl_screen_height;
 mgl_coord_t g_mgl_screen_width;
 void mgl_core_init(void){
@@ -26,6 +28,8 @@ void mgl_core_tick(void){
     }else{
         mgl_process_touch_data(NULL,root);
     }
+
+    mgl_timer_tick();
 
     mgl_render_page(mgl_get_current_page(),g_mgl_full_screen_ctx.clip);
 }

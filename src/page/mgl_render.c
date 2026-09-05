@@ -326,6 +326,13 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip,mgl_rect
     }
 }
 
+static bool overlay_has_visible(mgl_widget_t *root){
+    for(mgl_widget_t *c=root->first_child;c;c=c->next_sibling){
+        if(!c->hidden){return true;}
+    }
+    return false;
+}
+
 void mgl_render_page(mgl_page_t *page,mgl_rect_t screen){
 #if MGL_FPS_LOG
     uint32_t now=mgl_hal_get_tick_ms();
@@ -346,11 +353,12 @@ void mgl_render_page(mgl_page_t *page,mgl_rect_t screen){
         last_report=now;
     }
 #endif
-    if(!page||!page->root||
-        (!page->root->dirty
-         &&!(mgl_page_get_overlay()&&mgl_page_get_overlay()->root
-            &&mgl_page_get_overlay()->root->dirty)
-        )){
+    mgl_page_t *overlay_check=mgl_page_get_overlay();
+    uint8_t overlay_render_needed=
+            overlay_check&&overlay_check->root
+            &&overlay_check->root->dirty
+            &&overlay_has_visible(overlay_check->root);
+    if(!page||!page->root||(!page->root->dirty&&!overlay_render_needed)){
 #if MGL_FPS_LOG
     skip_frames++;
 #endif
@@ -367,20 +375,24 @@ void mgl_render_page(mgl_page_t *page,mgl_rect_t screen){
     mgl_render_widget(page->root,&screen,flush_rects,&flush_count);
     mgl_page_t *overlay=mgl_page_get_overlay();
     if(overlay&&overlay->root){
-        if(page_was_dirty){
-            mgl_widget_t *stack[MGL_MAX_WIDGET_DEPTH];
-            int sp=0;
-            stack[sp++]=overlay->root;
-            while(sp>0){
-                mgl_widget_t *ow=stack[--sp];
-                ow->dirty=0;
-                for(mgl_widget_t *c=ow->first_child;c;c=c->next_sibling){
-                    if(sp<MGL_MAX_WIDGET_DEPTH){stack[sp++]=c;}
+        if(overlay_has_visible(overlay->root)){
+            if(page_was_dirty){
+                mgl_widget_t *stack[MGL_MAX_WIDGET_DEPTH];
+                int sp=0;
+                stack[sp++]=overlay->root;
+                while(sp>0){
+                    mgl_widget_t *ow=stack[--sp];
+                    ow->dirty=0;
+                    for(mgl_widget_t *c=ow->first_child;c;c=c->next_sibling){
+                        if(sp<MGL_MAX_WIDGET_DEPTH){stack[sp++]=c;}
+                    }
                 }
+                mgl_widget_mark_full_dirty(overlay->root);
             }
-            mgl_widget_mark_full_dirty(overlay->root);
+            mgl_render_widget(overlay->root,&screen,flush_rects,&flush_count);
+        }else{
+            overlay->root->dirty=0;
         }
-        mgl_render_widget(overlay->root,&screen,flush_rects,&flush_count);
     }
     mgl_hal_flush_display(flush_rects,flush_count);
     uint32_t time=mgl_hal_get_tick_ms()-start;
