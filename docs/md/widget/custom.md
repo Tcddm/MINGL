@@ -105,9 +105,9 @@ mgl_layout_align_offset_with_margin|容器的layout()|含margin的对齐偏移
 <<< @/../../src/widget/mgl_widget.h#mgl_widget_set_dirty_content{c}
 
 ### 控件脏且要求强制重绘
-控件的脏标记来自子冒泡（自身没变），但需要整个bounds被父容器重绘。调用`mgl_widget_mark_full_dirty`，该函数会设置`force_redraw=1`让gather收集全bounds而非展开到叶子。极少场景——List slot 回收时需要。
+控件的脏标记来自子冒泡（自身没变），但需要整个bounds被父容器重绘。调用`mgl_widget_set_dirty_full`，该函数会设置`force_redraw=1`让gather收集全bounds而非展开到叶子。极少场景——List slot 回收时需要。
 
-<<< @/../../src/widget/mgl_widget.h#mgl_widget_mark_full_dirty{c}
+<<< @/../../src/widget/mgl_widget.h#mgl_widget_set_dirty_full{c}
 
 ## 自定义控件
 前两种方法复用已有控件。当你需要的交互或外观不在内置控件里时，则可以从零实现自定义控件。

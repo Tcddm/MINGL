@@ -12,6 +12,9 @@ extern "C"{
 #define MGL_ABS_I16(n) ((n)>=0?(n):(int16_t)(-(int32_t)(n)))
 // #endregion
 
+#define MGL_MIN(a, b)  ((a) < (b) ? (a) : (b))
+#define MGL_MAX(a, b)  ((a) > (b) ? (a) : (b))
+
 //请注意！表格90度因为32768，因为int16所以改为32767，精度损失极低
 static const uint16_t sin_table_90[] = {
         0,     572,   1144,  1715,  2286,  2856,  3425,  3993,  4560,  5126,  5690,  6252,  6813,  7371,  7927,  8481,

@@ -9,37 +9,41 @@ extern "C"{
 
 // #region MGL_HANDLE_ACTION
 /**
-* @brief 定义处理所有动作类型的回调函数
-*
-* 自动提取控件真实类型，用户只需编写动作处理逻辑。
-*
-* @param name         函数名
-* @param widget_type  控件类型（如 mgl_button_t）
-* @param func         动作处理代码块，可访问 action 和 widget 变量
+ * @brief 定义处理所有动作类型的回调函数
+ *
+ * 自动提取控件真实类型，用户在下一行编写动作处理逻辑。\n
+ * 可访问action和widget变量\n
+ * 需要与MGL_HANDLE_ACTION_END()闭合使用
+ *
+ * @param name         函数名
+ * @param widget_type  控件类型（如 mgl_button_t）
 */
-#define MGL_HANDLE_ACTION(name,widget_type,func) \
-    static bool name(mgl_widget_t * self,const mgl_action_type_t action){ \
+#define MGL_HANDLE_ACTION_BEGIN(name,widget_type) \
+    static bool name(mgl_widget_t *self,const mgl_action_type_t action){ \
         widget_type *widget=container_of(self,widget_type,base); \
-                func \
-        }
+        (void)action;
+
+#define MGL_HANDLE_ACTION_END() }
 // #endregion
 
 // #region MGL_HANDLE_SINGLE_ACTION
 /**
  * @brief 定义处理单一动作类型的回调函数
  *
- * 在自动提取控件真实类型的基础上自动过滤指定动作类型，用户直接编写业务逻辑。
+ * 在自动提取控件真实类型的基础上自动过滤指定动作类型，用户在下一行编写业务逻辑。\n
+ * 可访问action和widget变量\n
+ * 需要与MGL_HANDLE_SINGLE_ACTION_END()闭合使用
  *
  * @param name         函数名
  * @param widget_type  控件类型（如 mgl_button_t）
  * @param action_name  动作类型名
- * @param func         动作处理代码块，可访问action和widget变量
  */
-#define MGL_HANDLE_SINGLE_ACTION(name,widget_type,action_name,func) \
-    static bool name(mgl_widget_t * self,const mgl_action_type_t action){ \
+#define MGL_HANDLE_SINGLE_ACTION_BEGIN(name,widget_type,action_name) \
+    static bool name(mgl_widget_t *self,const mgl_action_type_t action){ \
         widget_type *widget=container_of(self,widget_type,base); \
-        if(action==action_name){ \
-            func \
+        if(action==action_name){
+
+#define MGL_HANDLE_SINGLE_ACTION_END() \
             return true; \
         } \
         return false; \

@@ -82,7 +82,7 @@ bool mgl_page_push(const char *name){
     mgl_hal_clear_screen();
     mgl_hal_flush_display(NULL,0);
     if(mgl_page_get_overlay()&&mgl_page_get_overlay()->root){
-        mgl_widget_mark_full_dirty(mgl_page_get_overlay()->root);
+        mgl_widget_set_dirty_full(mgl_page_get_overlay()->root);
     }
 
     return true;
@@ -100,7 +100,7 @@ void mgl_page_back(void){
     mgl_hal_clear_screen();
     mgl_hal_flush_display(NULL,0);
     if(mgl_page_get_overlay()&&mgl_page_get_overlay()->root){
-        mgl_widget_mark_full_dirty(mgl_page_get_overlay()->root);
+        mgl_widget_set_dirty_full(mgl_page_get_overlay()->root);
     }
     mgl_current_page_redraw();
     MGL_LOG_INFO(MGL_LOG_TAG_PAGE,"back to %s page (destroyed %s page)",
@@ -163,7 +163,7 @@ void mgl_current_page_redraw(void){
             }
         }
     }
-    mgl_page_mark_all_widget_dirty(page->root);
+    mgl_page_set_dirty_all_widget(page->root);
 }
 
 void mgl_page_init_overlay(void){

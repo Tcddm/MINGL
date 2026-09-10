@@ -16,7 +16,7 @@ void mgl_toast_show(const char *str,uint32_t duration_ms){
     if(!w){ return;}
     mgl_label_t *l=container_of(mgl_widget_find_by_id(w,1),mgl_label_t,base);
     if(!l){ return;}
-    mgl_label_set_text(l,str);
+    mgl_widget_set_text(l,text,str);
     mgl_overlay_show(w);
     mgl_timer_init(&g_timer,duration_ms,false,on_toast_timeout,w);
     mgl_timer_restart(&g_timer);

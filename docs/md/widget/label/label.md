@@ -15,14 +15,13 @@ painter|[mgl_painter_t](/core/types#mgl_painter_t)|主题前景画笔|文本画�
 
 ## API
 ### 更新文本
+`label`为标签控件指针
+
+`text`为标签存文本的字段
+
+`"Hello"`为新文本，需要注意文本的生命周期
 ```c
-/**
- * @brief 更新标签文本
- * 
- * @param label 标签
- * @param text 新文本（注意生命周期）
- */
-void mgl_label_set_text(mgl_label_t *label,const char *text);
+mgl_widget_set_text(label,text,"Hello");
 ```
 
 ## 动作

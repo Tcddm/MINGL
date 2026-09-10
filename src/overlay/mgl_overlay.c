@@ -22,7 +22,7 @@ void mgl_overlay_show(mgl_widget_t *w){
     mgl_widget_set_dirty(w);
     mgl_page_t *page=mgl_get_current_page();
     if(page && page->root){
-        mgl_widget_mark_full_dirty(page->root);
+        mgl_widget_set_dirty_full(page->root);
     }
 }
 
@@ -32,6 +32,6 @@ void mgl_overlay_hide(mgl_widget_t *w){
     mgl_widget_set_dirty(w);
     mgl_page_t *page=mgl_get_current_page();
     if(page && page->root){
-        mgl_widget_mark_full_dirty(page->root);
+        mgl_widget_set_dirty_full(page->root);
     }
 }

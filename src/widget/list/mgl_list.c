@@ -106,7 +106,7 @@ static void list_recycle(mgl_list_t *list){
         list->adapter.bind(list->adapter.user_data,
                            list->pool[found].root,i);
         //强制全量重绘
-        mgl_widget_mark_full_dirty(list->pool[found].root);
+        mgl_widget_set_dirty_full(list->pool[found].root);
 
         //高度若未初始化则自动测量
         if(list->item_heights[i]==0){
@@ -230,11 +230,9 @@ static bool on_event(mgl_widget_t *self,const mgl_event_t *event){
             return false;
     }
 }
-
 static void layout(mgl_widget_t *self,const mgl_rect_t *area){
     mgl_list_t *list=container_of(self,mgl_list_t,base);
     self->bounds=*area;
-
     if(list->scrollbar.on_scroll){
         list->scrollbar.base.bounds=(mgl_rect_t){
                 (mgl_coord_t)(area->x+area->w-list->scrollbar.bar_w),

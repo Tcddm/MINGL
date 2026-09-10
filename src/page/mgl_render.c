@@ -9,6 +9,11 @@ static uint32_t render_total_ms=0;
 static uint32_t render_max_ms=0;
 static uint32_t render_min_ms=UINT32_MAX;
 #endif
+#if MGL_LOG_ENABLE_RENDER_DETAIL
+#define DETAIL_LOG(tag,fmt,...) MGL_LOG_DBG(tag,fmt,##__VA_ARGS__)
+#else
+#define DETAIL_LOG(tag,fmt,...) ((void)0)
+#endif
 /**
  * @brief 将rect加入脏矩形数组，溢出时合并到最后一条
  *
@@ -91,9 +96,9 @@ static uint8_t render_gather_dirty_rects(mgl_widget_t *w,mgl_rect_t rects[]){
             continue;
         }
         bool child_self_changed=(c->prev_bounds.x!=c->bounds.x||
-                                   c->prev_bounds.y!=c->bounds.y||
-                                   c->prev_bounds.w!=c->bounds.w||
-                                   c->prev_bounds.h!=c->bounds.h);
+                                 c->prev_bounds.y!=c->bounds.y||
+                                 c->prev_bounds.w!=c->bounds.w||
+                                 c->prev_bounds.h!=c->bounds.h);
         bool child_is_container=(c->vtable->layout!=NULL);
         if(child_is_container&&!child_self_changed&&!c->force_redraw){
             //容器仅因子控件冒泡变脏，展开子树取真实脏矩形
@@ -109,9 +114,9 @@ static uint8_t render_gather_dirty_rects(mgl_widget_t *w,mgl_rect_t rects[]){
     //判断是否需要合并自身区域
     bool had_dirty_child=(count>0);
     bool self_changed=(w->prev_bounds.x!=w->bounds.x||
-                         w->prev_bounds.y!=w->bounds.y||
-                         w->prev_bounds.w!=w->bounds.w||
-                         w->prev_bounds.h!=w->bounds.h);
+                       w->prev_bounds.y!=w->bounds.y||
+                       w->prev_bounds.w!=w->bounds.w||
+                       w->prev_bounds.h!=w->bounds.h);
 
     bool include_self=w->dirty;
     if(has_layout){
@@ -124,8 +129,8 @@ static uint8_t render_gather_dirty_rects(mgl_widget_t *w,mgl_rect_t rects[]){
         uint8_t j=0;
         for(uint8_t i=0;i<count;i++){
             if(rects[i].x<sr.x || rects[i].y<sr.y ||
-                rects[i].x+rects[i].w>sr.x+sr.w ||
-                rects[i].y+rects[i].h>sr.y+sr.h){
+               rects[i].x+rects[i].w>sr.x+sr.w ||
+               rects[i].y+rects[i].h>sr.y+sr.h){
                 if(j!=i){rects[j]=rects[i];}
                 j++;
             }
@@ -387,7 +392,7 @@ void mgl_render_page(mgl_page_t *page,mgl_rect_t screen){
                         if(sp<MGL_MAX_WIDGET_DEPTH){stack[sp++]=c;}
                     }
                 }
-                mgl_widget_mark_full_dirty(overlay->root);
+                mgl_widget_set_dirty_full(overlay->root);
             }
             mgl_render_widget(overlay->root,&screen,flush_rects,&flush_count);
         }else{

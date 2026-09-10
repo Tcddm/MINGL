@@ -42,22 +42,22 @@ static mgl_action_type_t slider_get_action(mgl_widget_t *self,const mgl_event_t 
 ## 用法
 ### 按钮点击
 ```c
-MGL_HANDLE_SINGLE_ACTION(on_click,mgl_button_t,MGL_ACTION_CLICK,{
+MGL_HANDLE_SINGLE_ACTION_BEGIN(on_click,mgl_button_t,MGL_ACTION_CLICK)
     MGL_LOG_INFO("Button","clicked");
-})
+MGL_HANDLE_SINGLE_ACTION_END()
 
 //声明时绑定
 MGL_BUTTON(.action_handler=on_click, ...)
 ```
 ### 滑块值变化
 ```c
-MGL_HANDLE_ACTION(on_slide,mgl_slider_t,{
+MGL_HANDLE_ACTION_BEGIN(on_slide,mgl_slider_t)
     if(action==MGL_ACTION_VALUE_CHANGED){
         printf("value: %d\n",widget->value);
         return true;
     }
     return false;
-})
+MGL_HANDLE_ACTION_END()
 
 //声明时绑定
 MGL_SLIDER(.action_handler=on_slide, ...)

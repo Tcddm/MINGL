@@ -97,7 +97,11 @@ config MGL_LOG_ENABLE_LAYOUT
 	
 config MGL_LOG_ENABLE_RENDER
     bool "渲染日志"
-    default y	
+    default y
+config MGL_LOG_ENABLE_RENDER_DETAIL
+    bool "渲染详细日志"
+    default n
+    depends	on MGL_LOG_ENABLE_RENDER
 	
 config MGL_LOG_ENABLE_EVENT
     bool "事件日志"

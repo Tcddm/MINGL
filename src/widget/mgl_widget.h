@@ -90,6 +90,21 @@ typedef bool (*mgl_action_handler_t)(mgl_widget_t *,const mgl_action_type_t acti
 #define MGL_WIDGET_NAME_FIELD_GET(widget) "?"
 #endif
 
+#define MGL_WIDGET_SET_FIELD_FULL_DIRTY(widget,field,value) \
+   do{widget->field=*value; \
+   mgl_widget_set_dirty_full(&widget->base);}while(0)
+
+#define MGL_WIDGET_SET_FIELD_CONTENT_DIRTY(widget,field,value) \
+   do{widget->field=*value; \
+   mgl_widget_set_dirty_content(&widget->base);}while(0)
+
+#define mgl_widget_set_painter(widget,field,painter) \
+    MGL_WIDGET_SET_FIELD_FULL_DIRTY(widget,field,painter)
+
+#define mgl_widget_set_text(widget,field,text) \
+    do{widget->field=text; \
+    mgl_widget_set_dirty_content(&widget->base);}while(0)
+
 typedef enum{
     MGL_MEASURE_EXACT,
     MGL_MEASURE_AT_MOST,
@@ -183,13 +198,13 @@ static inline void mgl_widget_set_dirty_content(mgl_widget_t *w){
 }
 // #endregion
 
-// #region mgl_widget_mark_full_dirty
+// #region mgl_widget_set_dirty_full
 /**
  * @brief 标记控件需要全bounds重绘
  *
  * @param w 控件
  */
-static inline void mgl_widget_mark_full_dirty(mgl_widget_t *w) {
+static inline void mgl_widget_set_dirty_full(mgl_widget_t *w){
     w->force_redraw=1;
     w->prev_bounds=w->bounds;
     w->layout_dirty=1;
