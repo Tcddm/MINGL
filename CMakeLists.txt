@@ -103,6 +103,7 @@ set(MGL_CORE_SOURCES
         src/widget/switch/mgl_switch.c
         src/timer/mgl_timer.c
         src/overlay/toast/mgl_toast.c
+        src/core/mgl_array.c
 )
 
 file(STRINGS "${CMAKE_SOURCE_DIR}/.config" CONFIG_LINES)

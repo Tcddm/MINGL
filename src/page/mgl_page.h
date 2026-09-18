@@ -22,11 +22,8 @@ struct mgl_page_t{
 };
 
 
-mgl_page_t *mgl_page_create_from_blueprint(const mgl_widget_blueprint_t *root_bp);
+mgl_page_t *mgl_page_create_from_blueprint(uint8_t *start,const mgl_widget_blueprint_t *root_bp);
 void mgl_page_set_dirty_all_widget(mgl_widget_t *root);
-
-#define MGL_ROOT(root_widget) \
-    return mgl_page_create_from_blueprint(root_widget)
 
 #ifdef __cplusplus
 }

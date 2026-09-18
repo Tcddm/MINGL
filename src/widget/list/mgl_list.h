@@ -8,6 +8,9 @@
 extern "C"{
 #endif
 
+#ifndef MGL_LIST_ESTIMATED_ITEM_HEIGHT
+#define MGL_LIST_ESTIMATED_ITEM_HEIGHT 50
+#endif
 #ifndef MGL_LIST_POOL_MIN_SIZE
 #define MGL_LIST_POOL_MIN_SIZE 3
 #endif
@@ -22,6 +25,7 @@ typedef struct{
     void (*bind)(void *user_data, mgl_widget_t *slot_root,
                         uint16_t index);
     void *user_data;
+    uint16_t capacity;
 } mgl_list_adapter_t;
 // #endregion
 
@@ -84,7 +88,7 @@ void *mgl_list_init(void *memory, const void *args);
 
 void mgl_list_set_scrollbar(mgl_list_t *list,mgl_scrollbar_t *sb);
 
-
+// #region api
 /**
  * @brief 滚动到指定行
  *
@@ -116,6 +120,39 @@ mgl_widget_t *mgl_list_get_slot_root(const mgl_list_t *list,
  */
 void mgl_list_notify_height_changed(mgl_list_t *list,uint16_t index,
                                     int16_t new_h);
+
+/**
+ * @brief 通过列表项中的控件反推列表项索引
+ *
+ * 支持传入列表项根控件或列表项内的子控件。\n
+ * 若传入子控件会沿父链向上查找所属列表项。
+ *
+ * @param list 列表
+ * @param widget 控件
+ * @return 索引
+ */
+uint16_t mgl_list_get_index_by_widget(const mgl_list_t *list,const mgl_widget_t *widget);
+
+/**
+ * @brief 通知列表移除指定索引的列表项
+ *
+ * @param list 列表
+ * @param index 索引
+ * @return 是否成功
+ * @note 需要先修改数据源。
+ */
+bool mgl_list_remove(mgl_list_t *list,uint16_t index);
+
+/**
+ * @brief 通知列表在指定索引插入列表项
+ *
+ * @param list 列表
+ * @param index 索引
+ * @return 是否成功
+ * @note 需要先修改数据源，且要正确设置数据源的容量。
+ */
+bool mgl_list_insert(mgl_list_t *list,uint16_t index);
+// #endregion
 
 #ifdef __cplusplus
 }

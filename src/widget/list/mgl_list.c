@@ -1,5 +1,11 @@
 #include "mgl_list.h"
 #include "pool/mgl_page_pool.h"
+#include "core/mgl_array.h"
+
+static inline bool is_scrollbar_visible(const mgl_list_t *list){
+    return list->base.bounds.h>0
+           && list->content_height>list->base.bounds.h;
+}
 
 static int32_t compute_cumulative_y(const mgl_list_t *list,uint16_t index){
     int32_t y=0;
@@ -15,8 +21,6 @@ static void sync_scrollbar(mgl_list_t *list){
                               list->content_height,
                               list->base.bounds.h,
                               list->scroll_y);
-    list->scrollbar.base.hidden=
-            !(list->content_height>list->base.bounds.h);
 }
 
 static void list_recycle(mgl_list_t *list){
@@ -31,7 +35,17 @@ static void list_recycle(mgl_list_t *list){
         }
     }
 
-    if(total==0||pool_n==0){return;}
+    if(pool_n==0){return;}
+
+    if(total==0){
+        for(uint8_t i=0; i < pool_n; i++){
+            if(list->pool[i].root){
+                list->pool[i].root->hidden=true;
+            }
+            list->pool[i].list_index=MGL_LIST_INVALID_INDEX;
+        }
+        return;
+    }
 
     //标记所有槽位未使用
     for(uint8_t s=0;s<pool_n;s++){
@@ -48,7 +62,7 @@ static void list_recycle(mgl_list_t *list){
     for(uint16_t i=0;i<total;i++){
         int16_t h=list->item_heights[i];
         //未初始化占位
-        if(h==0){h=50;}
+        if(h==0){h=MGL_LIST_ESTIMATED_ITEM_HEIGHT;}
 
         if(start_idx==total&&cum_y+h>vis_top){
             start_idx=i;
@@ -112,20 +126,23 @@ static void list_recycle(mgl_list_t *list){
         if(list->item_heights[i]==0){
             mgl_coord_t h=list->adapter.get_height(
                     list->adapter.user_data,i);
+            mgl_coord_t measured;
+
             if(h>0){
-                list->item_heights[i]=h;
-                list->content_height=compute_cumulative_y(list,total);
+                measured=h;
             }else{
+                mgl_widget_t *root=list->pool[found].root;
                 mgl_coord_t nw,nh;
-                list->pool[found].root->vtable->measure(
-                        list->pool[found].root,
-                        (mgl_measure_constraint_t){list->base.bounds.w,
-                                                   MGL_MEASURE_AT_MOST},
-                        (mgl_measure_constraint_t){32767,MGL_MEASURE_NONE},
-                        &nw,&nh);
-                list->item_heights[i]=nh;
-                list->content_height=compute_cumulative_y(list,total);
+                root->vtable->measure(root,
+                                      (mgl_measure_constraint_t){list->base.bounds.w,
+                                                                 MGL_MEASURE_AT_MOST},
+                                      (mgl_measure_constraint_t){32767,MGL_MEASURE_NONE},
+                                      &nw,&nh);
+                measured=nh;
             }
+
+            list->item_heights[i]=measured;
+            list->content_height+=(measured-MGL_LIST_ESTIMATED_ITEM_HEIGHT);
         }
 
         if(!list->pool[found].root){continue;}
@@ -135,8 +152,11 @@ static void list_recycle(mgl_list_t *list){
         list->pool[found].root->bounds.x=list->base.bounds.x;
         list->pool[found].root->bounds.y=
                 (mgl_coord_t)(list->base.bounds.y+slot_y-list->scroll_y);
-        list->pool[found].root->bounds.w=
-                (mgl_coord_t)(list->base.bounds.w-list->scrollbar.bar_w);
+        mgl_coord_t item_w=list->base.bounds.w;
+        if(is_scrollbar_visible(list)){
+            item_w=(mgl_coord_t)(item_w-list->scrollbar.bar_w);
+        }
+        list->pool[found].root->bounds.w=item_w;
         list->pool[found].root->bounds.h=list->item_heights[i];
 
         if(list->pool[found].root->vtable&&
@@ -263,6 +283,10 @@ static void layout(mgl_widget_t *self,const mgl_rect_t *area){
         }
         list_recycle(list);
     }else{
+        mgl_coord_t item_w=area->w;
+        if(is_scrollbar_visible(list)){
+            item_w=(mgl_coord_t)(item_w-list->scrollbar.bar_w);
+        }
         for(uint8_t i=0;i<list->pool_size;i++){
             if(list->pool[i].list_index==MGL_LIST_INVALID_INDEX){ continue;}
             if(!list->pool[i].root || list->pool[i].root->hidden){ continue;}
@@ -270,8 +294,7 @@ static void layout(mgl_widget_t *self,const mgl_rect_t *area){
             list->pool[i].root->bounds.x=area->x;
             list->pool[i].root->bounds.y=
                     (mgl_coord_t)(area->y+slot_y-list->scroll_y);
-            list->pool[i].root->bounds.w=
-                    (mgl_coord_t)(area->w-list->scrollbar.bar_w);
+            list->pool[i].root->bounds.w=item_w;
         }
     }
 
@@ -304,8 +327,12 @@ void *mgl_list_init(void *memory,const void *args){
     if(list->item_count==0){goto init_scrollbar;}
 
     //分配高度数组
+    uint16_t heights_size=list->adapter.capacity;
+    if(list->adapter.capacity<list->item_count){
+        heights_size=list->item_count;
+    }
     list->item_heights=(int16_t *)mgl_page_pool_alloc(
-            sizeof(int16_t)*list->item_count);
+            sizeof(int16_t)*heights_size);
     if(!list->item_heights){goto init_scrollbar;}
     for(uint16_t i=0;i<list->item_count;i++){
         list->item_heights[i]=0;
@@ -314,9 +341,13 @@ void *mgl_list_init(void *memory,const void *args){
     //预加载固定高度项
     for(uint16_t i=0;i<list->item_count;i++){
         mgl_coord_t h=list->adapter.get_height(list->adapter.user_data,i);
-        if(h<=0){break;}
-        list->item_heights[i]=h;
-        list->content_height+=h;
+        if(h>0){
+            list->item_heights[i]=h;
+            list->content_height+=h;
+        }else{
+            list->item_heights[i]=0;
+            list->content_height+=MGL_LIST_ESTIMATED_ITEM_HEIGHT;
+        }
     }
 
     list->pool=NULL;
@@ -381,3 +412,97 @@ mgl_widget_t *mgl_list_get_slot_root(const mgl_list_t *list,
         }
     return NULL;
 }
+
+uint16_t mgl_list_get_index_by_widget(const mgl_list_t *list,const mgl_widget_t *widget){
+    if(!list || !widget){return MGL_LIST_INVALID_INDEX;}
+
+    const mgl_widget_t *node=widget;
+
+    while(node){
+        for(uint8_t i=0;i<list->pool_size;i++){
+            if(list->pool[i].root!=node){ continue;}
+            if(list->pool[i].list_index & 0x8000){ continue;}
+            if(list->pool[i].list_index==MGL_LIST_INVALID_INDEX){ continue;}
+            return list->pool[i].list_index;
+        }
+        node=node->parent;
+    }
+    return MGL_LIST_INVALID_INDEX;
+}
+
+bool mgl_list_remove(mgl_list_t *list,uint16_t index){
+    if(!list || !list->item_heights){return false;}
+    if(index>=list->item_count){return false;}
+
+    int32_t y_at_remove=compute_cumulative_y(list,index);
+    mgl_coord_t old_h=list->item_heights[index];
+
+    mgl_array_remove(list->item_heights,sizeof(int16_t),
+                     &list->item_count,index);
+
+    list->content_height-=old_h;
+    if(list->content_height<0){list->content_height=0;}
+
+    if(y_at_remove<list->scroll_y){
+        list->scroll_y-=old_h;
+    }
+
+    for(uint8_t s=0;s<list->pool_size;s++){
+        list->pool[s].list_index=MGL_LIST_INVALID_INDEX;
+    }
+
+    int32_t max_y=list->content_height-list->base.bounds.h;
+    if(max_y<0){max_y=0;}
+    if(list->scroll_y>max_y){list->scroll_y=max_y;}
+    if(list->scroll_y<0){list->scroll_y=0;}
+
+    list_recycle(list);
+    sync_scrollbar(list);
+    mgl_widget_set_dirty_full(&list->base);
+    return true;
+}
+
+bool mgl_list_insert(mgl_list_t *list,uint16_t index){
+    if(!list || !list->item_heights){return false;}
+    if(index>list->item_count){return false;}
+    if(list->item_count>=list->adapter.capacity){return false;}
+
+    int32_t y_at_insert=compute_cumulative_y(list,index);
+
+    mgl_coord_t h=list->adapter.get_height(
+            list->adapter.user_data,index);
+
+    int16_t *slot=(int16_t *)mgl_array_insert(
+            list->item_heights,sizeof(int16_t),
+            &list->item_count,list->adapter.capacity,index);
+    if(!slot){return false;}
+
+    mgl_coord_t delta;
+    if(h<=0){
+        *slot=0;
+        delta=MGL_LIST_ESTIMATED_ITEM_HEIGHT;
+    }else{
+        *slot=h;
+        delta=h;
+    }
+    list->content_height+=delta;
+
+    if(y_at_insert<list->scroll_y){
+        list->scroll_y+=delta;
+    }
+
+    for(uint8_t s=0;s<list->pool_size;s++){
+        list->pool[s].list_index=MGL_LIST_INVALID_INDEX;
+    }
+
+    int32_t max_y=list->content_height-list->base.bounds.h;
+    if(max_y<0){max_y=0;}
+    if(list->scroll_y>max_y){list->scroll_y=max_y;}
+    if(list->scroll_y<0){list->scroll_y=0;}
+
+    list_recycle(list);
+    sync_scrollbar(list);
+    mgl_widget_set_dirty_full(&list->base);
+    return true;
+}
+

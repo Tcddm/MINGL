@@ -16,9 +16,13 @@ extern const uint8_t g_mgl_page_registry_count;
 #define MGL_PAGE_ENTRY(name,make_func) {(name),(make_func)}
 
 #define MGL_PAGE_WIDGETS_START(name) \
-    mgl_page_t *name(){
+    mgl_page_t *name(){ \
+        uint8_t *__mgl_page_start=mgl_page_pool_get_top();
 
 #define MGL_PAGE_WIDGETS_END() ;}
+
+#define MGL_ROOT(root_widget) \
+    return mgl_page_create_from_blueprint(__mgl_page_start,root_widget)
 
 #define MGL_PAGE_REGISTRY_START() \
     const mgl_page_descriptor_t g_mgl_page_registry[]={

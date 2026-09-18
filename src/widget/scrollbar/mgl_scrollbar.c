@@ -1,11 +1,15 @@
 #include "mgl_scrollbar.h"
 
+static inline bool is_visible(const mgl_scrollbar_t *sb){
+    return sb->viewport_h>0 && sb->content_total>sb->viewport_h;
+}
+
 static void draw(mgl_draw_ctx_t *ctx){
     mgl_widget_t *self=ctx->widget;
     mgl_scrollbar_t *sb=container_of(self,mgl_scrollbar_t,base);
 
     //内容不满屏不显示滚动条
-    if(sb->content_total<=sb->viewport_h||sb->viewport_h<=0){
+    if(!is_visible(sb)){
         return;
     }
 
@@ -43,6 +47,13 @@ static void measure(mgl_widget_t *self,
                               mgl_coord_t *out_w,mgl_coord_t *out_h){
     mgl_scrollbar_t *sb=container_of(self,mgl_scrollbar_t,base);
     mgl_coord_t natural_w=sb->bar_w;
+
+    if(!is_visible(sb)){
+        *out_w=0;
+        *out_h=0;
+        return;
+    }
+
     MGL_MEASURE_RESOLVE(self->pref_w,natural_w,cw,out_w);
     MGL_MEASURE_RESOLVE(self->pref_h,100,ch,out_h);
 }
@@ -71,7 +82,7 @@ static int32_t scrollbar_y_to_position(mgl_scrollbar_t *sb,mgl_coord_t y){
 static bool on_event(mgl_widget_t *self, const mgl_event_t *event) {
     mgl_scrollbar_t *sb = container_of(self, mgl_scrollbar_t, base);
     //内容不满屏时不响应
-    if(sb->content_total<=sb->viewport_h){return false;}
+    if(!is_visible(sb)){return false;}
 
     int32_t thumb_h=(int32_t)sb->viewport_h*sb->viewport_h/sb->content_total;
     if(thumb_h<MGL_SCROLLBAR_DEFAULT_THUMB_MIN_H){
@@ -146,8 +157,17 @@ void *mgl_scrollbar_init(void *memory,const void *args){
 void mgl_scrollbar_set_content(mgl_scrollbar_t *sb,
                                int32_t content_total,int32_t viewport_h,
                                int32_t position){
+    bool was_visible=is_visible(sb);
+
     sb->content_total=content_total;
     sb->viewport_h=viewport_h;
     sb->position=position;
+
+    bool now_visible=is_visible(sb);
+
+    if(was_visible!=now_visible){
+        mgl_widget_set_dirty_content(&sb->base);
+        return;
+    }
     mgl_widget_set_dirty(&sb->base);
 }

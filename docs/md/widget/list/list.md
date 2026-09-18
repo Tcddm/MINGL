@@ -10,6 +10,12 @@
 `get_height(user_data,index)`|返回行高（>0 固定高度，0 自动测量）
 `bind(user_data,slot_root,index)`|将数据填入某行的控件树
 
+字段：
+类型|名称|默认值|说明
+-|-|-|-
+void *|user_data|NULL|回调上下文。由调用方设置，列表仅透传给回调。通常指向业务数据结构，用于提供实际数据
+uint16_t|capacity|0|容量，为0时不预分配且不可插入，但仍可删除
+
 Adapter在列表首次填充或回收池重新分配slot时被调用。`slot_root`是`item_blueprint`实例化出的控件树根，通过`mgl_widget_find_by_id`更新其中的子控件内容。
 
 ## 参数
@@ -28,39 +34,7 @@ painter|[mgl_painter_t](/core/types#mgl_painter_t)|主题背景画笔|列表背�
 <!--@include: @/snippets/widget_round_radius_args.md-->
 
 ## API
-```c
-/**
- * @brief 滚动到指定行
- *
- * @param list 列表
- * @param index 索引
- */
-void mgl_list_scroll_to(mgl_list_t *list,uint16_t index);
-/**
- * @brief 获取当前滚动位置
- *
- * @param list 列表
- * @return 当前滚动位置
- */
-int32_t mgl_list_get_scroll_position(const mgl_list_t *list);
-/**
- * @brief 获取某行的控件树根（可直接修改内容）
- *
- * @param list 列表
- * @param index 索引
- * @return 树根控件指针
- */
-mgl_widget_t *mgl_list_get_slot_root(const mgl_list_t *list,
-                                     uint16_t index);
-/**
- * @brief 某行高度变化时通知列表重建布局
- * @param list 列表
- * @param index 索引
- * @param new_h 新高度
- */
-void mgl_list_notify_height_changed(mgl_list_t *list,uint16_t index,
-                                    int16_t new_h);
-```
+<<< @/../../src/widget/list/mgl_list.h#api{c}
 
 ## 动作
 
@@ -73,53 +47,213 @@ void mgl_list_notify_height_changed(mgl_list_t *list,uint16_t index,
 页面池大小需满足slot实例的总内存需求。含嵌套布局的item建议页面池容量 ≥ 8192。
 
 ## 示例
-
 ```c
-//文本缓冲区，避免文本生命周期问题
-static char text_buf[500][32]; 
-//共有多少项
-static uint16_t my_get_count(void *data) { return 500; }
+#ifndef MGL_DEMO_DEV_NEW_LIST_H
+#define MGL_DEMO_DEV_NEW_LIST_H
 
-//每项高度
-static mgl_coord_t my_get_height(void *data,uint16_t i) {
-    return (i < 5) ? 70 : 50;
+#include "page/mgl_page_manager.h"
+
+MGL_EXPORT_PAGE(make_demo_dev_new_list_page)
+
+#endif //MGL_DEMO_DEV_NEW_LIST_H
+```
+```c
+#include <stdio.h>
+
+#include "widget/layout/mgl_linear_layout.h"
+#include "widget/button/mgl_button.h"
+#include "widget/list/mgl_list.h"
+#include "widget/label/mgl_label.h"
+
+#include "event/mgl_event.h"
+#include "painter/mgl_solid_painter.h"
+#include "core/mgl_array.h"
+
+//使用宏预定义按钮
+#define button(btn_text,action_id) MGL_BUTTON( \
+.pref_w=100, \
+.pref_h=-1, \
+.round_radius=20, \
+.text=btn_text, \
+.id=action_id, \
+.action_handler=on_button_click \
+)
+
+//定义数据结构
+#define MAX_ITEMS 32
+typedef struct {
+    char item_buf[32];
+    char id_buf[8];
+} list_item;
+typedef struct {
+    list_item items[MAX_ITEMS];
+    uint16_t count;
+} list_model;
+
+//定义按钮类型
+typedef enum {
+    BTN_BACK=1,
+    BTN_ADD,
+    BTN_REMOVE
+} btn_type;
+
+//按钮的动作处理回调
+MGL_HANDLE_SINGLE_ACTION_BEGIN(on_button_click,mgl_button_t,MGL_ACTION_CLICK)
+switch(self->id){
+    case BTN_BACK:
+        mgl_page_back();
+        break;
+    case BTN_ADD:{
+        mgl_list_t *list=container_of(
+                mgl_current_page_find_widget_by_id(100),
+                mgl_list_t,base);
+        list_model *m=list->adapter.user_data;
+        //尾部插入：插入位置=当前数量（即最后一个元素之后）
+        uint16_t insert_at=m->count;
+
+        list_item *slot=(list_item *)mgl_array_insert(
+                m->items,sizeof(list_item),
+                &m->count,MAX_ITEMS,insert_at);
+        if(!slot){break;}
+
+        sprintf(slot->item_buf,MGL_FMT("Inserted #%d"),m->count-1);
+        sprintf(slot->id_buf,MGL_FMT("#%d"),m->count-1);
+
+        mgl_list_insert(list,insert_at);
+    }
+        break;
+    case BTN_REMOVE: {
+        mgl_list_t *list=container_of(
+                mgl_current_page_find_widget_by_id(100),mgl_list_t,base);
+        //获取这个按钮是在哪个索引的
+        uint16_t index=
+                mgl_list_get_index_by_widget(list,self);
+        if(index==MGL_LIST_INVALID_INDEX){ break;}
+
+        list_model *m=list->adapter.user_data;
+
+        mgl_array_remove(m->items,sizeof(list_item),&m->count,index);
+        mgl_list_remove(list,index);
+    }
+        break;
+    default:
+        //其他按钮不处理
+        return true;
 }
+MGL_HANDLE_SINGLE_ACTION_END()
 
-//数据绑定
-static void my_bind(void *data,mgl_widget_t *slot,uint16_t i) {
-    mgl_widget_t *label=mgl_widget_find_by_id(slot,1);
-    sprintf(text_buf[i],"Item #%d",i);
-    mgl_label_set_text(container_of(label,mgl_label_t,base),text_buf[i]);
-}
-
-//定义数据源
-static const mgl_list_adapter_t kAdapter={
-    .get_count=my_get_count,
-    .get_height=my_get_height,
-    .bind=my_bind
-};
-
-//定义列表项模板
-MGL_COMPONENT(kItem,
+//顶部操作按钮控件组
+MGL_COMPONENT(btns,
     MGL_LINEAR_LAYOUT(
         .direction=MGL_LINEAR_HORIZONTAL,
+        .pref_w=-1,
+        .pref_h=50,
+        .round_radius=-1,
         .children=MGL_CHILDREN(
-            MGL_LABEL(
-                .id=1,
-                .font=&mgl_font_16px
-            )
+            button(MGL_STR("返回"),BTN_BACK),
+            button(MGL_STR("新增"),BTN_ADD)
         )
     )
 );
 
-//声明列表
-MGL_LIST(
-    .adapter=&kAdapter,
-    .item_blueprint=kItem,
-    .pref_w=-2,
-    .pref_h=-2,
-    .scrollbar_args={
-        .track=MGL_SOLID_PAINTER_TEMP(MGL_COLOR(48,48,48)),
-        .thumb=MGL_SOLID_PAINTER_TEMP(MGL_COLOR(200,200,200))
+//列表项控件组
+MGL_COMPONENT(kitem,
+    MGL_LINEAR_LAYOUT(
+        .direction=MGL_LINEAR_HORIZONTAL,
+        .main_align=MGL_ALIGN_SPACE_BETWEEN,
+        .cross_align=MGL_ALIGN_CENTER,
+        .pref_w=-1,
+        .pref_h=-1,
+        .round_radius=-1,
+        .painter=MGL_SOLID_PAINTER_TEMP(MGL_COLOR_GREEN),
+        .children=MGL_CHILDREN(
+            MGL_LABEL(
+                .id=1,
+                .font=&mgl_font_16px,
+                .margin=((mgl_margin_t){0,4,0,4})
+            ),
+            MGL_LABEL(
+                .id=2,
+                .font=&mgl_font_16px,
+                .margin=((mgl_margin_t){0,8,0,8})
+            ),
+            button(MGL_STR("删除"),BTN_REMOVE)
+        )
+    )
+);
+
+//生成测试数据
+static void build_test_data(list_model *m){
+    m->count=5;
+    for(int i=0;i<m->count;i++) {
+        sprintf(m->items[i].item_buf,MGL_FMT("This is item #%d in the list"),i);
+        sprintf(m->items[i].id_buf,MGL_FMT("#%d"),i);
+
     }
+}
+
+//数据源：获得数量
+static uint16_t get_count(void *user_data){
+    return ((list_model *)user_data)->count;
+}
+
+//数据源：获得当前索引的列表项的高度
+static mgl_coord_t get_height(void *user_data,uint16_t index){
+    (void)user_data;
+    (void)index;
+    //全部高度固定为50
+    //0为自动布局，需要确保列表项可以自动测量出高度
+    return 50;
+}
+
+//数据源：绑定数据
+static void bind(void *user_data,mgl_widget_t *slot,uint16_t index){
+    list_model *m=(list_model *)user_data;
+
+    mgl_widget_t *w_id=mgl_widget_find_by_id(slot,1);
+    mgl_widget_t *w_text=mgl_widget_find_by_id(slot,2);
+
+    if(w_id){
+        mgl_widget_set_text(container_of(w_id,mgl_label_t,base),
+                            text,m->items[index].id_buf);
+    }
+    if(w_text){
+        mgl_widget_set_text(container_of(w_text,mgl_label_t,base),
+                            text,m->items[index].item_buf);
+    }
+}
+
+//页面声明
+MGL_PAGE_WIDGETS_START(make_demo_dev_new_list_page)
+    //初始化数据
+    mgl_list_adapter_t *adapter=(mgl_list_adapter_t *)mgl_page_pool_alloc(sizeof(mgl_list_adapter_t));
+    adapter->user_data=mgl_page_pool_alloc(sizeof(list_model));
+    adapter->get_count=get_count;
+    adapter->get_height=get_height;
+    adapter->bind=bind;
+    adapter->capacity=MAX_ITEMS;
+    //生成测试数据
+    build_test_data(adapter->user_data);
+MGL_ROOT(
+    MGL_LINEAR_LAYOUT(
+        .direction=MGL_LINEAR_VERTICAL,
+        .pref_w=g_mgl_screen_width,
+        .pref_h=g_mgl_screen_height,
+        .round_radius=-1,
+        .painter=MGL_THEME_BG(),
+        .children=MGL_CHILDREN(
+            btns,
+            MGL_LIST(
+                .id=100,
+                .pref_w=-1,
+                .pref_h=-1,
+                .round_radius=-1,
+                .painter=MGL_THEME_BG(),
+                .item_blueprint=kitem,
+                .adapter=adapter
+            )
+        )
+    )
 )
+MGL_PAGE_WIDGETS_END()
+```
