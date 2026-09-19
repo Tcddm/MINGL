@@ -30,6 +30,12 @@ static inline uint8_t render_add_dirty_rect(mgl_rect_t rects[],uint8_t count,
     }
     return count;
 }
+static inline bool render_rect_contains(const mgl_rect_t *outer,const mgl_rect_t *inner){
+    return inner->x>=outer->x&&
+           inner->y>=outer->y&&
+           (int32_t)inner->x+inner->w<=(int32_t)outer->x+outer->w&&
+           (int32_t)inner->y+inner->h<=(int32_t)outer->y+outer->h;
+}
 /**
  * @brief 迭代遍历脏但未移动的容器子树，收集所有真正产生像素变化的叶子控件或移动容器的 prev∪bounds 区域
  *
@@ -192,6 +198,9 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip,mgl_rect
             clear_rects[clear_count++]=cur_clear[i];
         }
 
+        mgl_rect_t drawn[MGL_DIRTY_RECT_MAX_COUNT];
+        uint8_t drawn_count=0;
+
         if(dirty_count>0){
             //逐脏矩形与父裁剪区求交后绘制
             for(uint8_t i=0;i<dirty_count;i++){
@@ -207,6 +216,9 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip,mgl_rect
                     mgl_draw_ctx_t ctx;
                     mgl_ctx_init(&ctx,w,&draw_area);
                     w->vtable->draw(&ctx);
+                }
+                if(drawn_count<MGL_DIRTY_RECT_MAX_COUNT){
+                    drawn[drawn_count++]=draw_area;
                 }
 
                 //不合并，独立追加到波及区
@@ -224,11 +236,22 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip,mgl_rect
                 }
             }
             w->dirty=0;
-        }else if(cur_clear_count>0){
-            //不脏但被祖先波及区覆盖要求强制重绘
+        }
+        if(cur_clear_count>0){
+            //被祖先波及区覆盖要求强制重绘；已被本次脏矩形覆盖的区域跳过，避免重复绘制
             for(uint8_t i=0;i<cur_clear_count;i++){
                 mgl_rect_t draw_area;
                 if(!mgl_rect_intersect(&w->bounds,&cur_clear[i],&draw_area)){
+                    continue;
+                }
+                bool covered=false;
+                for(uint8_t j=0;j<drawn_count;j++){
+                    if(render_rect_contains(&drawn[j],&draw_area)){
+                        covered=true;
+                        break;
+                    }
+                }
+                if(covered){
                     continue;
                 }
                 if(w->vtable->draw){
@@ -305,6 +328,7 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip,mgl_rect
         // #region mgl_render_widget_step7_1
         //本控件处理完毕，清理状态
         w->dirty=0;
+        w->force_redraw=0;
         w->prev_bounds=w->bounds;
         // #endregion
 
@@ -323,6 +347,7 @@ void mgl_render_widget(mgl_widget_t *root,const mgl_rect_t *screen_clip,mgl_rect
             }
             if(w){
                 w->dirty=0;
+                w->force_redraw=0;
                 w->prev_bounds=w->bounds;
             }
         }
