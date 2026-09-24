@@ -64,9 +64,11 @@ UTF-8 字符串 → mgl_utf8_decode 逐字符解码 → 二分查找字形 → m
 current_x = (mgl_coord_t)(current_x + glyph->adv);
 ```
 
-### 文本宽度计算
+### 文本尺寸计算
 
-`mgl_font_get_text_width` 遍历整段文本累加 `adv`，返回像素宽度。用于布局时 `measure()` 计算控件的自然尺寸。
+`mgl_font_get_text_size` 按 `\n` 分行，逐行累加 `adv`，返回**最大行宽**与**总高度**（首行 `font_size`，之后每行为 `font_size + line_spacing`）。`\r` 会被忽略。用于布局时 `measure()` 计算控件的自然尺寸。
+
+绘制侧：`mgl_ctx_draw_text` 支持 `\n` 换行（左对齐、行高为 `font_size`）；需要水平/垂直对齐或行距时用 `mgl_ctx_draw_text_box`，传入盒子与对齐方式即可，换行与逐行定位都由框架处理。
 ## 声明宏
 
 字体系统对外暴露的核心 API 是四个宏。它们有两个作用：标记文本让字体生成工具提取字符集，以及在控件声明中指定字体。

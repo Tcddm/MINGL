@@ -1,11 +1,12 @@
-#include <string.h>
 #include "mgl_label.h"
 
 static void draw(mgl_draw_ctx_t *ctx) {
     mgl_widget_t *self=ctx->widget;
     mgl_label_t *label=container_of(self,mgl_label_t,base);
-    const mgl_font_t *font=label->font;
-    mgl_ctx_draw_text(ctx,self->bounds.x,(mgl_coord_t)(self->bounds.y+font->baseline),0,label->text,font,&label->painter);
+    mgl_ctx_draw_text_box(ctx,&self->bounds,
+                          label->text_align_h,label->text_align_v,
+                          label->line_spacing,0,
+                          label->text,label->font,&label->painter);
 }
 
 static void measure(mgl_widget_t *self,
@@ -16,11 +17,10 @@ static void measure(mgl_widget_t *self,
     const mgl_font_t *font=label->font;
     const char *text=label->text;
     mgl_coord_t text_w=0;
+    mgl_coord_t text_h=0;
     if(font&&text){
-        text_w=mgl_font_get_text_width(font,text);
+        mgl_font_get_text_size(font,text,label->line_spacing,&text_w,&text_h);
     }
-
-    mgl_coord_t text_h=font->font_size;
 
     MGL_MEASURE_RESOLVE(self->pref_w,text_w,cw,out_w);
     MGL_MEASURE_RESOLVE(self->pref_h,text_h,ch,out_h);
@@ -39,6 +39,8 @@ void *mgl_label_init(void *memory,const void *args){
 
     label->text=label_args->text;
     label->font=label_args->font;
+    label->line_spacing=label_args->line_spacing;
+    MGL_TEXT_ALIGN_FIELD_HANDLE(label,label_args);
 
     MGL_WIDGET_BASE_FIELD_HANDLE(label,label_args);
     MGL_WIDGET_PAINTER_FIELD_HANDLE_DEFAULT(label,label_args,MGL_THEME_FG());

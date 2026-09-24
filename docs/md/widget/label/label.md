@@ -6,8 +6,11 @@
 ### 控件独有参数
 参数|类型|默认值|说明
 -|-|-|-
-text|const char *|NULL|显示的文本（注意生命周期）
+text|const char *|NULL|显示的文本（注意生命周期；支持 `\n` 换行）
 font|const [mgl_font_t](/core/types.md#mgl_font_t) *|NULL|字体
+line_spacing|mgl_coord_t|0|行间距（额外像素）
+text_align_h|mgl_text_align_t|MGL_TEXT_ALIGN_START|水平对齐
+text_align_v|mgl_text_align_t|MGL_TEXT_ALIGN_START|垂直对齐
 ### 框架便捷宏参数
 参数|类型|默认值|说明
 -|-|-|-
@@ -32,5 +35,15 @@ mgl_widget_set_text(label,text,"Hello");
 ```c
 MGL_LABEL(
     .text=MGL_STR("Hello")
+)
+```
+
+### 多行与对齐
+```c
+MGL_LABEL(
+    .text=MGL_STR("Line1\nLine2"),
+    .text_align_h=MGL_TEXT_ALIGN_CENTER,
+    .text_align_v=MGL_TEXT_ALIGN_CENTER,
+    .line_spacing=2
 )
 ```

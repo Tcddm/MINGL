@@ -14,6 +14,8 @@ void *mgl_label_init(void *memory,const void *args);
 typedef struct {
     char *text;
     const mgl_font_t *font;
+    mgl_coord_t line_spacing;
+    MGL_TEXT_ALIGN_ARGS_FIELD
     MGL_WIDGET_BASE_ARGS_FIELD
     MGL_WIDGET_PAINTER_ARGS_FIELD
 } mgl_label_args_t;
@@ -22,6 +24,8 @@ typedef struct {
     mgl_widget_t base;
     const char *text;
     const mgl_font_t *font;
+    mgl_coord_t line_spacing;
+    MGL_TEXT_ALIGN_FIELD
     MGL_WIDGET_PAINTER_FIELD
 } mgl_label_t;
 // #endregion
@@ -32,14 +36,6 @@ typedef struct {
         .size=sizeof(mgl_label_t), \
         .args=&(mgl_label_args_t){ __VA_ARGS__ } \
     })
-
-/**
- * @brief 更新标签文本
- *
- * @param label 标签
- * @param text 新文本（注意生命周期）
- */
-void mgl_label_set_text(mgl_label_t *label,const char *text);
 
 #ifdef __cplusplus
 }

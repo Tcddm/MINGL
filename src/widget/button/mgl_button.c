@@ -24,8 +24,10 @@ static void draw(mgl_draw_ctx_t *ctx){
     }
 
     if(button->text&&button->font){
-        items[count].width=mgl_font_get_text_width(button->font,button->text);
-        items[count].height=button->font->font_size;
+        mgl_coord_t text_w=0,text_h=0;
+        mgl_font_get_text_size(button->font,button->text,0,&text_w,&text_h);
+        items[count].width=text_w;
+        items[count].height=text_h;
         count++;
     }
 
@@ -49,9 +51,9 @@ static void draw(mgl_draw_ctx_t *ctx){
     }
 
     if(button->text&&button->font){
-        mgl_coord_t baseline_y=(mgl_coord_t)(items[idx].bounds.y+button->font->baseline);
-        mgl_ctx_draw_text(ctx,items[idx].bounds.x,baseline_y,0,
-                          button->text,button->font,&button->foreground);
+        mgl_ctx_draw_text_box(ctx,&items[idx].bounds,
+                              MGL_TEXT_ALIGN_CENTER,MGL_TEXT_ALIGN_CENTER,0,0,
+                              button->text,button->font,&button->foreground);
     }
 
 
@@ -73,8 +75,10 @@ static void measure(mgl_widget_t *self,
     }
 
     if(button->text&&button->font){
-        items[count].width =mgl_font_get_text_width(button->font,button->text);
-        items[count].height=button->font->font_size;
+        mgl_coord_t text_w=0,text_h=0;
+        mgl_font_get_text_size(button->font,button->text,0,&text_w,&text_h);
+        items[count].width=text_w;
+        items[count].height=text_h;
         count++;
     }
 

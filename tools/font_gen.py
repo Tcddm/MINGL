@@ -153,17 +153,39 @@ def generate_mgl_font(
 # -----------------------------------------------------------------------------
 # 扫描源码提取MGL_STR
 # -----------------------------------------------------------------------------
+# 将 C 字符串字面量里的转义序列解码为真实字符（\n \r \t \\ \" \' \xHH）
+_ESCAPE_MAP = {'n':'\n','r':'\r','t':'\t','0':'\0','\\':'\\','"':'"',"'":"'"}
+
+def decode_c_escapes(s: str) -> str:
+    out = []
+    i = 0
+    n = len(s)
+    while i < n:
+        c = s[i]
+        if c == '\\' and i + 1 < n:
+            e = s[i+1]
+            if e in _ESCAPE_MAP:
+                out.append(_ESCAPE_MAP[e]); i += 2; continue
+            if e == 'x' and i + 3 < n:
+                try:
+                    out.append(chr(int(s[i+2:i+4], 16))); i += 4; continue
+                except ValueError:
+                    pass
+            out.append(e); i += 2; continue
+        out.append(c); i += 1
+    return ''.join(out)
+
 def scan_sources(dirs, default_size: int):
     charsets = {}
 
     # 1. MGL_STR("文本") 无字号，默认大小
-    pat_str = re.compile(r'MGL_STR\(\s*"([^"]*)"\s*\)', re.DOTALL)
+    pat_str = re.compile(r'MGL_STR\(\s*"((?:[^"\\]|\\.)*)"\s*\)', re.DOTALL)
     # 2. MGL_STR_SIZE("文本", 数字) 指定字号
-    pat_str_size = re.compile(r'MGL_STR_SIZE\(\s*"([^"]*)"\s*,\s*(\d+)\s*\)', re.DOTALL)
+    pat_str_size = re.compile(r'MGL_STR_SIZE\(\s*"((?:[^"\\]|\\.)*)"\s*,\s*(\d+)\s*\)', re.DOTALL)
     # 3. MGL_FMT("格式化串") 默认字号，自带数字
-    pat_fmt = re.compile(r'MGL_FMT\(\s*"([^"]*)"\s*\)', re.DOTALL)
+    pat_fmt = re.compile(r'MGL_FMT\(\s*"((?:[^"\\]|\\.)*)"\s*\)', re.DOTALL)
     # 4. MGL_FMT_SIZE("格式化串", 数字) 指定字号，自带数字
-    pat_fmt_size = re.compile(r'MGL_FMT_SIZE\(\s*"([^"]*)"\s*,\s*(\d+)\s*\)', re.DOTALL)
+    pat_fmt_size = re.compile(r'MGL_FMT_SIZE\(\s*"((?:[^"\\]|\\.)*)"\s*,\s*(\d+)\s*\)', re.DOTALL)
 
     for d in dirs:
         base_dir = Path(d)
@@ -188,7 +210,7 @@ def scan_sources(dirs, default_size: int):
                 # 处理 MGL_STR
                 for m in pat_str.finditer(content):
                     hit_count += 1
-                    text = m.group(1)
+                    text = decode_c_escapes(m.group(1))
                     size = default_size
                     if size not in charsets:
                         charsets[size] = set()
@@ -197,7 +219,7 @@ def scan_sources(dirs, default_size: int):
                 # 处理 MGL_STR_SIZE
                 for m in pat_str_size.finditer(content):
                     hit_count += 1
-                    text = m.group(1)
+                    text = decode_c_escapes(m.group(1))
                     size = int(m.group(2))
                     if size not in charsets:
                         charsets[size] = set()
@@ -206,7 +228,7 @@ def scan_sources(dirs, default_size: int):
                 # 处理 MGL_FMT
                 for m in pat_fmt.finditer(content):
                     hit_count += 1
-                    text = m.group(1)
+                    text = decode_c_escapes(m.group(1))
                     size = default_size
                     if size not in charsets:
                         charsets[size] = set()
@@ -217,7 +239,7 @@ def scan_sources(dirs, default_size: int):
                 # 处理 MGL_FMT_SIZE
                 for m in pat_fmt_size.finditer(content):
                     hit_count += 1
-                    text = m.group(1)
+                    text = decode_c_escapes(m.group(1))
                     size = int(m.group(2))
                     if size not in charsets:
                         charsets[size] = set()
