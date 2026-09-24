@@ -1,5 +1,10 @@
 #include "mgl_event.h"
 #include "logger/mgl_log.h"
+#if MGL_LOG_ENABLE_EVENT
+#define EVENT_LOG(fmt,...) MGL_LOG_DBG(MGL_LOG_TAG_EVENT,fmt,##__VA_ARGS__)
+#else
+#define EVENT_LOG(fmt,...) ((void)0)
+#endif
 static struct {
     uint8_t finger_id;
     mgl_coord_t down_x,down_y;
@@ -86,10 +91,9 @@ static bool event_bubble(mgl_widget_t *from,mgl_event_t *event){
         bool consumed=false;
         if(current->vtable&&current->vtable->on_event){
             consumed=current->vtable->on_event(current,event);
-            MGL_LOG_DBG(MGL_LOG_TAG_EVENT,
-                        "bubble widget(%p) name=%s event=%d → %s",
-                        (void*)current,MGL_WIDGET_NAME_FIELD_GET(current),event->type,
-                        consumed ? "CONSUMED" : "PASS");
+            EVENT_LOG("bubble widget(%p) name=%s event=%d → %s",
+                      (void*)current,MGL_WIDGET_NAME_FIELD_GET(current),event->type,
+                      consumed ? "CONSUMED" : "PASS");
         }
         mgl_action_type_t action;
         if(current->vtable->get_action){

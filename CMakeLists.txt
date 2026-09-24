@@ -15,6 +15,7 @@ set(CONFIG_BOOL_VARS
         MGL_FRAMEBUFFER_INTERNAL
         MGL_FRAMEBUFFER_EXTERNAL
         MGL_OVERLAY
+        MGL_HW_ACCEL_NEON
 )
 
 if(WIN32)
@@ -134,6 +135,45 @@ endif()
 if(MGL_TOOL_ACCEL_FONT_GEN)
     file(GLOB MGL_FONT_GENERATED CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/generated/font/mgl_*_font_*.c)
     list(APPEND MGL_CORE_SOURCES ${MGL_FONT_GENERATED})
+endif()
+
+if(MGL_HW_ACCEL_NEON)
+    include(CheckCSourceCompiles)
+    set(_MGL_NEON_TEST "
+#include <arm_neon.h>
+int main(void){
+    uint16_t buf[8]={0};
+    vst1q_u16(buf,vdupq_n_u16(0));
+    return (int)buf[0];
+}
+")
+    set(MGL_NEON_FLAGS "")
+    set(_MGL_NEON_OK FALSE)
+    check_c_source_compiles("${_MGL_NEON_TEST}" MGL_NEON_NO_FLAG_OK)
+    if(MGL_NEON_NO_FLAG_OK)
+        set(_MGL_NEON_OK
+                TRUE)
+    else()
+        set(CMAKE_REQUIRED_FLAGS "-mfpu=neon")
+        check_c_source_compiles("${_MGL_NEON_TEST}" MGL_NEON_FPU_OK)
+        unset(CMAKE_REQUIRED_FLAGS)
+        if(MGL_NEON_FPU_OK)
+            set(MGL_NEON_FLAGS "-mfpu=neon")
+            set(_MGL_NEON_OK TRUE)
+        endif()
+    endif()
+    if(_MGL_NEON_OK)
+        if(MGL_NEON_FLAGS)
+            set_source_files_properties(
+                    ${CMAKE_SOURCE_DIR}/src/hal/mgl_hal_fb.c
+                    PROPERTIES COMPILE_OPTIONS "${MGL_NEON_FLAGS}"
+            )
+        endif()
+        message(STATUS "ARM NEON 加速已启用 (flags='${MGL_NEON_FLAGS}')")
+    else()
+        message(WARNING "MGL_HW_ACCEL_NEON 已启用，但当前工具链无法编译 ARM NEON，"
+                        "已回退到标量实现。请使用 aarch64 工具链，或带 -mfpu=neon 的 armv7 工具链")
+    endif()
 endif()
 
 add_library(mgl_core STATIC ${MGL_CORE_SOURCES})

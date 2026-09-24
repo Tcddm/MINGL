@@ -52,34 +52,43 @@ void mgl_ctx_draw_arc(mgl_draw_ctx_t *ctx,mgl_coord_t cx,mgl_coord_t cy,mgl_coor
     }
 }
 void mgl_ctx_fill_arc(mgl_draw_ctx_t *ctx,mgl_coord_t cx,mgl_coord_t cy,mgl_coord_t radius,uint16_t start_angle,uint16_t end_angle,const mgl_painter_t *painter){
-
     MGL_CHECK(radius>0);
-
     uint16_t span=mgl_arc_get_span(start_angle,end_angle);
 
+    if(span<=180){
+        mgl_coord_t poly[2*(180+2)];
+        uint16_t v=0;
+        poly[v*2+0]=cx;
+        poly[v*2+1]=cy;
+        v++;
+        for(uint16_t i=0;i<=span;i++){
+            uint16_t angle=(uint16_t)(start_angle+i);
+            if(angle>=360){angle=(uint16_t)(angle-360);}
+            mgl_coord_t x,y;
+            mgl_arc_get_xy(cx,cy,radius,angle,&x,&y);
+            poly[v*2+0]=x;
+            poly[v*2+1]=y;
+            v++;
+        }
+        mgl_ctx_fill_polygon(ctx,poly,v,painter);
+        return;
+    }
+
     mgl_coord_t last_x,last_y;
-
     mgl_arc_get_xy(cx,cy,radius,start_angle,&last_x,&last_y);
-
     mgl_coord_t points[6];
     for(uint16_t i=1;i<=span;i++){
-
-        uint16_t angle=start_angle+i;
-        if(angle>=360){angle-=360;}
-
-        mgl_coord_t x, y;
+        uint16_t angle=(uint16_t)(start_angle+i);
+        if(angle>=360){angle=(uint16_t)(angle-360);}
+        mgl_coord_t x,y;
         mgl_arc_get_xy(cx,cy,radius,angle,&x,&y);
-
         points[0]=cx;
         points[1]=cy;
         points[2]=last_x;
         points[3]=last_y;
         points[4]=x;
         points[5]=y;
-
-        mgl_ctx_fill_polygon(ctx, points, 3, painter);
-
-
+        mgl_ctx_fill_polygon(ctx,points,3,painter);
         last_x=x;
         last_y=y;
     }

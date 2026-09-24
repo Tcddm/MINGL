@@ -1,5 +1,16 @@
 #include "mgl_fb.h"
 #include "string.h"
+
+#if MGL_HW_ACCEL_NEON && defined(__ARM_NEON)
+#include <arm_neon.h>
+#define MGL_FB_NEON 1
+#else
+#define MGL_FB_NEON 0
+#endif
+#if MGL_HW_ACCEL_NEON && !defined(__ARM_NEON)
+#warning "MGL_HW_ACCEL_NEON is enabled but the compiler did not enable NEON; using scalar fallback"
+#endif
+
 #if MGL_FRAMEBUFFER_INTERNAL
 static mgl_color_value_t fb_buf[MGL_SCREEN_WIDTH*MGL_SCREEN_HEIGHT];
 
@@ -25,12 +36,26 @@ void mgl_hal_set_pixel(mgl_coord_t x,mgl_coord_t y,mgl_color_value_t color){
 }
 
 void mgl_hal_fill_rect(mgl_coord_t x,mgl_coord_t y,mgl_coord_t w,mgl_coord_t h,mgl_color_value_t color){
+#if MGL_FB_NEON
+    uint16x8_t v=vdupq_n_u16(color);
+    for(int row=y;row<y+h;row++){
+        mgl_color_value_t *line=&g_fb.data[(uint32_t)row*g_fb.stride_px+x];
+        int col=0;
+        for(;col+8<=w;col+=8){
+            vst1q_u16(&line[col],v);
+        }
+        for(;col<w;col++){
+            line[col]=color;
+        }
+    }
+#else
     for(int row=y;row<y+h;row++){
         mgl_color_value_t *line=&g_fb.data[(uint32_t)row*g_fb.stride_px+x];
         for(int col=0;col<w;col++){
             line[col]=color;
         }
     }
+#endif
 }
 
 void mgl_hal_clear_screen(void){

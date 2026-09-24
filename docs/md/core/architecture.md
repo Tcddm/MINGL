@@ -151,7 +151,7 @@ root ───▶ {init,size,args}      ──▶     root (已分配,已初始�
 | 脏标记未设置 | 一次 `if(w->dirty)` 判断，直接跳过整帧 |
 | 脏标记已设置 | 深度遍历控件树，执行七步渲染流程 |
 
-渲染器的核心是 `mgl_render_widget`，它用三个深度栈（clip / clr / clr_valid）做非递归深度优先遍历，对每个控件执行七个步骤。
+渲染器的核心是 `mgl_render_widget`，它用深度栈（`clip_stack`，以及 `cur_clear` 配合 `clr_stack`/`clr_count_stack`）做非递归深度优先遍历，对每个控件执行七个步骤。
 
 <<< @/../../src/page/mgl_render.h#mgl_render_widget{c}
 
@@ -190,7 +190,7 @@ HAL 触摸数据 → 命中测试(最深可见控件) → 冒泡(on_event) → �
 | 页面管理层 | `src/page/` `src/pool/` | 页面切换、蓝图收集、栈式内存池 | → 控件核心 |
 | 控件核心 | `src/widget/mgl_widget.*` | 虚表定义、dirty 标记、控件树结构 | → 上下文 |
 | 布局 | `src/widget/mgl_layout_utils.*` `src/widget/layout/` | 测量和排列控件 | → 控件核心 |
-| 渲染 | `src/page/mgl_render.*` `src/draw/` | 脏区域收集、裁剪传递、形状绘制 | → HAL |
+| 渲染 | `src/page/mgl_render.*` `src/draw/` | 脏区域收集、并集切块、裁剪传递、形状绘制 | → HAL |
 | 裁剪 | `src/draw/mgl_draw_ctx.*` | 像素级裁剪上下文，逐层求交 | → HAL |
 | 事件 | `src/event/` | 命中测试、冒泡、动作转换 | → 控件核心 |
 | 画笔 | `src/painter/` | 颜色填充策略抽象 | 被 draw() 调用 |
@@ -244,6 +244,12 @@ static inline void mgl_widget_set_dirty(mgl_widget_t *w) {
 MINGL 方案：裁剪矩形随控件树遍历逐层求交传递。每个控件收到的 `ctx->clip` 已经是"你可以合法绘制的像素区域"。不需要全局脏矩形列表，不需要合并。
 
 代价：深度遍历的开销。控件树很深时每帧遍历成本不为零。但 MINGL 面向的场景控件树深度通常在 3-5 层，这个成本可以忽略。
+
+### 为什么重画区域取并集并切成不相交块
+
+每个控件本帧要重画的像素，可能由两部分组成且互相重叠：它自己的脏区（`dirty_rects`），以及被祖先绘制覆盖、需要恢复的区域（`cur_clear`）。渲染器把它们求**并集**，切成两两不相交的块，每块只调用一次 `draw()`。
+
+原因是**半透明画笔**：同一像素被同一个控件合成两次会叠加两次、颜色变深。取并集并去重，保证每个像素每帧最多被合成一次。切块后的矩形数量受 `MGL_DIRTY_RECT_MAX_COUNT` 约束，这是**局部容量**，不是全局脏矩形列表；常见情况只需 1~2 块。
 
 ### 为什么事件用冒泡而非广播
 

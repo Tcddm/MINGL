@@ -22,6 +22,9 @@ config MGL_HW_ACCEL_BIT_BLT
 	depends on MGL_FRAMEBUFFER_NONE
 config MGL_HW_ACCEL_ALPHA_BLEND
     bool "alpha混合"
+config MGL_HW_ACCEL_NEON
+    bool "ARM NEON (CPU SIMD)"
+    depends on !MGL_FRAMEBUFFER_NONE
 	
 endmenu	
 	
